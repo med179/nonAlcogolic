@@ -35,8 +35,8 @@ class StartScreen(Screen):
     def __init__ (self,**kwargs):
         super (StartScreen, self).__init__(**kwargs)
 
-        my_button1 = Button(text="Go to screen 2",size_hint_y=None, size_y=100)
-        my_button1.bind(on_press=self.changer)
+        my_button1 = Button(text="Go to screen 2", on_press = self.changer())
+ #       my_button1.bind(on_press=self.changer)
 
         startScreen = AnchorLayout ()
 
@@ -46,7 +46,7 @@ class StartScreen(Screen):
             on_press = self.btnPress()
             )
         startScreen.add_widget(buttonStart)
-    
+        startScreen.add_widget(my_button1)
     def changer(self,*args):
         self.manager.current = 'screen2'
         
@@ -59,8 +59,8 @@ class Program(Screen):
     def __init__(self,**kwargs):
         super (Program,self).__init__(**kwargs)
 
-        my_button1 = Button(text="Go to screen 1",size_hint_y=None, size_y=100)
-        my_button1.bind(on_press=self.changer) 
+        my_button1 = Button(text="Go to screen 1", on_press=self.changer())
+ #       my_button1.bind(on_press=self.changer) 
 
         self.excuse = ['Я не могу больше пить']
 
