@@ -16,7 +16,7 @@ Config.set('graphics', 'resizable', 1)
 Config.set('graphics', 'width', 1080)
 Config.set('graphics', 'height', 1920)
 
-class Manager(App):
+class NonAlcogolic(App):
 
     def build(self):
         my_screenmanager = ScreenManager()
@@ -25,6 +25,7 @@ class Manager(App):
         my_screenmanager.add_widget(screen1)
         my_screenmanager.add_widget(screen2)
 
+        my_screenmanager.current = 'screen1'
         return my_screenmanager    
 
 
@@ -35,32 +36,44 @@ class StartScreen(Screen):
     def __init__ (self,**kwargs):
         super (StartScreen, self).__init__(**kwargs)
 
-        my_button1 = Button(text="Go to screen 2", on_press = self.changer())
- #       my_button1.bind(on_press=self.changer)
 
-        startScreen = AnchorLayout ()
+    def build(self):
+        my_button1 = Button(
+            text="Go to screen 2", 
+            on_press = self.changer
+            )
+#       my_button1.bind(on_press=self.changer)
+
+        startScreen = BoxLayout ()
 
         #скорее всего, тут нужно использовать картинку. Будет лучше выглядеть. 
         buttonStart = Button(
             text = 'Начать не пить', 
-            on_press = self.btnPress()
+            on_press = self.btnPress
             )
         startScreen.add_widget(buttonStart)
         startScreen.add_widget(my_button1)
+        return startScreen
+
     def changer(self,*args):
         self.manager.current = 'screen2'
         
 
     def btnPress(self):
         #тут должен быть переход на второй активити и запускаться таймеры
+
         pass
 
 class Program(Screen):
     def __init__(self,**kwargs):
         super (Program,self).__init__(**kwargs)
-
-        my_button1 = Button(text="Go to screen 1", on_press=self.changer())
- #       my_button1.bind(on_press=self.changer) 
+    
+    def build(self):
+        my_button1 = Button(
+            text="Go to screen 1", 
+            on_press = self.changer
+            )
+#       my_button1.bind(on_press=self.changer) 
 
         self.excuse = ['Я не могу больше пить']
 
@@ -69,14 +82,14 @@ class Program(Screen):
         timerTwo = Label()
         buttonProposal = Button(
             text = 'Мне предложили выпить', 
-            on_press = self.btnPress()
+            on_press = self.btnPress
             )
         
         program.add_widget(timerOne)
         program.add_widget(timerTwo)
         program.add_widget(buttonProposal)
         program.add_widget(my_button1)
-
+        return program
 
     def changer(self,*args):
         self.manager.current = 'screen1'
@@ -98,5 +111,5 @@ class Menu(BoxLayout):
 
 
 if __name__ == "__main__":
-    Manager().run()
+    NonAlcogolic().run()
 
