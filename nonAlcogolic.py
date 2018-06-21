@@ -11,7 +11,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.image import Image
 from kivy.uix.widget import Widget
 from kivy.uix.screenmanager import Screen, ScreenManager 
-#from kivy.properties import ObjectProperty
+from kivy.properties import ObjectProperty
 
 
 Config.set('graphics', 'resizable', 1)
@@ -36,8 +36,6 @@ class StartScreen(Screen):
 
     def __init__(self, **kwargs):
         super(StartScreen, self).__init__(**kwargs)
-
-    def build(self):
         #скорее всего, тут нужно использовать картинку. Будет лучше выглядеть.
         startScreen = BoxLayout()
 
@@ -47,8 +45,6 @@ class StartScreen(Screen):
 
         startScreen.add_widget(buttonStart)
         startScreen.add_widget(my_button1)
-
-        return startScreen
 
     def changer(self,*args):
         self.manager.current = 'screen2'
@@ -61,8 +57,6 @@ class StartScreen(Screen):
 class Program(Screen):
     def __init__(self, **kwargs):
         super(Program, self).__init__(**kwargs)
-    
-    def build(self):
         my_button1 = Button(text="Go to screen 1", on_press=self.changer)
         #my_button1.bind(on_press=self.changer)
 
@@ -77,8 +71,6 @@ class Program(Screen):
         program.add_widget(timerTwo)
         program.add_widget(buttonProposal)
         program.add_widget(my_button1)
-
-        return program
 
     def changer(self, *args):
         self.manager.current = 'screen1'
