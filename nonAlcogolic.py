@@ -1,4 +1,5 @@
-#nonAlcogolic
+# python
+# -*- coding: utf-8 -*-
 
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
@@ -46,7 +47,7 @@ class StartScreen(Screen):
 
         startScreen = BoxLayout ()
 
-        #скорее всего, тут нужно использовать картинку. Будет лучше выглядеть. 
+        #скорее всего, тут нужно использовать картинку. Будет лучше выглядеть.
         buttonStart = Button(
             text = 'Начать не пить', 
             on_press = self.btnPress
