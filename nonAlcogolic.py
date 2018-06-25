@@ -12,6 +12,7 @@ from kivy.uix.image import Image
 from kivy.uix.widget import Widget
 from kivy.uix.screenmanager import Screen, ScreenManager 
 from random import randint
+from datetime import date
 #from kivy.properties import ObjectProperty
 
 
@@ -33,7 +34,6 @@ class NonAlcogolic(App):
         my_screenmanager.add_widget(screen3)
         my_screenmanager.add_widget(screen4)
         return my_screenmanager
-
 
 class StartScreen(Screen):
 
@@ -66,23 +66,23 @@ class SecondScreen(Screen):
         oneDay = Button(
             text="Один день", 
             size_hint_y=None, 
-            size_y=100
+            size_y=100,
+            on_press=self.changerOneDay
             )
-        oneDay.bind(on_press=self.changer)
         
         oneMonth = Button(
             text="Один месяц", 
             size_hint_y=None, 
-            size_y=100
+            size_y=100,
+            on_press=self.changerOneMonth
             )
-        oneMonth.bind(on_press=self.changer)
 
         oneYear = Button(
             text="Один год", 
             size_hint_y=None, 
-            size_y=100
+            size_y=100,
+            on_press=self.changerOneYear            
             )
-        oneYear.bind(on_press=self.changer)
 
         secondScreen.add_widget(oneDay)
         secondScreen.add_widget(oneMonth)
@@ -90,7 +90,14 @@ class SecondScreen(Screen):
         self.add_widget(secondScreen)
 
 
-    def changer(self,*args):
+    def changerOneDay(self,*args):
+        self.deltaTime = date(0, 0, 1)
+        self.manager.current = 'ProgramScreen'
+    def changerOneMonth(self,*args):
+        self.deltaTime = date(0, 1, 0)
+        self.manager.current = 'ProgramScreen'
+    def changerOneYear(self,*args):
+        self.deltaTime = date(1, 0, 0)
         self.manager.current = 'ProgramScreen'
 
 class Program(Screen):
@@ -107,9 +114,14 @@ class Program(Screen):
 
         self.excuse = ['Я не могу больше пить', 'Принимаю антибиотки, нельзя смешивать с алкоголем - можно сдохнуть', 'Болею, доктор запретил', 'Аллергия']
 
+        presentDay = date.today()
+        finalDay = presentDay + self.deltaTime
+
 
         timerOne = Label(text = 'Timer 1')
+        timerOne.text = "Сегодня" + str(presentDay)
         timerTwo = Label(text = 'Timer 2')
+        timerTwo.text = "Финал" + str(finalDay)
         buttonProposal = Button(
             text='Мне предложили выпить', 
             size_hint_y=None, 
