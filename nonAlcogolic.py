@@ -11,6 +11,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.image import Image
 from kivy.uix.widget import Widget
 from kivy.uix.screenmanager import Screen, ScreenManager 
+from random import randint
 #from kivy.properties import ObjectProperty
 
 
@@ -24,11 +25,13 @@ class NonAlcogolic(App):
     def build(self):
         my_screenmanager = ScreenManager()
         screen1 = StartScreen(name='StartScreen')
-        screen2 = Program(name='ProgramScreen')
-        screen3 = Menu(name='MenuScreen')
+        screen2 = SecondScreen(name='SecondScreen')
+        screen3 = Program(name='ProgramScreen')
+        screen4 = Menu(name='MenuScreen')
         my_screenmanager.add_widget(screen1)
         my_screenmanager.add_widget(screen2)
         my_screenmanager.add_widget(screen3)
+        my_screenmanager.add_widget(screen4)
         return my_screenmanager
 
 
@@ -51,9 +54,44 @@ class StartScreen(Screen):
 
 
     def changer(self,*args):
+        self.manager.current = 'SecondScreen'
+
+class SecondScreen(Screen):
+
+    def __init__(self, **kwargs):
+        super(SecondScreen, self).__init__(**kwargs)
+        
+        secondScreen = BoxLayout()
+
+        oneDay = Button(
+            text="Один день", 
+            size_hint_y=None, 
+            size_y=100
+            )
+        oneDay.bind(on_press=self.changer)
+        
+        oneMonth = Button(
+            text="Один месяц", 
+            size_hint_y=None, 
+            size_y=100
+            )
+        oneMonth.bind(on_press=self.changer)
+
+        oneYear = Button(
+            text="Один год", 
+            size_hint_y=None, 
+            size_y=100
+            )
+        oneYear.bind(on_press=self.changer)
+
+        secondScreen.add_widget(oneDay)
+        secondScreen.add_widget(oneMonth)
+        secondScreen.add_widget(oneYear)
+        self.add_widget(secondScreen)
+
+
+    def changer(self,*args):
         self.manager.current = 'ProgramScreen'
-
-
 
 class Program(Screen):
     def __init__(self, **kwargs):
@@ -67,7 +105,7 @@ class Program(Screen):
             )
         menuButton.bind(on_press=self.changer)
 
-        self.excuse = ['Я не могу больше пить']
+        self.excuse = ['Я не могу больше пить', 'Принимаю антибиотки, нельзя смешивать с алкоголем - можно сдохнуть', 'Болею, доктор запретил', 'Аллергия']
 
 
         timerOne = Label(text = 'Timer 1')
@@ -75,7 +113,8 @@ class Program(Screen):
         buttonProposal = Button(
             text='Мне предложили выпить', 
             size_hint_y=None, 
-            size_y=100
+            size_y=100,
+            on_press = self.btnPress
             )
         program.add_widget(menuButton)       
         program.add_widget(timerOne)
@@ -88,6 +127,16 @@ class Program(Screen):
 
     def btnPress(self, *args):
         #всплывает попап с отмазкой
+        numberOfExuse = self.excuse[randint(0, len(self.excuse) - 1)]
+        popup = Popup(title= "Отмазка на сегодня",
+                separator_color = (0, 0, 1, 1),  
+                content = Label(
+                text='[color=33ff33][b]' + str(numberOfExuse) + '[/b][/color]', 
+                markup = True, 
+                font_size = 20), 
+                size_hint = (.7, .5))
+
+        popup.open()
         print(self.excuse[0])
         pass
 
