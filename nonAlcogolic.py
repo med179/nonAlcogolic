@@ -42,7 +42,7 @@ class StartScreen(Screen):
         super(StartScreen, self).__init__(**kwargs)
         startScreenLayout = BoxLayout()
         firstBtn = Button(text="Начать не пить!!!", size_hint_y=None, size_y=100, on_press=self.changer)
-        startScreenLayout.add_widget(firstButton)
+        startScreenLayout.add_widget(firstBtn)
         self.add_widget(startScreenLayout)
 
     def changer(self,*args):
@@ -95,8 +95,8 @@ class Program(Screen):
         # эту бурду в другой метод
         presentDay = date.today()
         finalDay = presentDay + self.deltaTime
-        timerOne.text = "Сегодня" + str(presentDay)
-        timerTwo.text = "Финал" + str(finalDay)
+        timerOneLbl.text = "Сегодня" + str(presentDay)
+        timerTwoLbl.text = "Финал" + str(finalDay)
         
     def changer(self, *args):
         self.manager.current = 'MenuScreen'
