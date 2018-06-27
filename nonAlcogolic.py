@@ -62,6 +62,7 @@ class SecondScreen(Screen):
         secondScreenLayout.add_widget(oneYearBtn)
         self.add_widget(secondScreenLayout)
 
+    #тут сделать рефакторинг
     def changerOneDay(self,*args):
         self.deltaTime = date(0, 0, 1)
         self.manager.current = 'ProgramScreen'
