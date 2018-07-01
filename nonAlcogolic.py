@@ -13,6 +13,12 @@ from kivy.uix.widget import Widget
 from kivy.uix.screenmanager import Screen, ScreenManager 
 from random import randint
 from datetime import date, timedelta
+from kivy.clock import Clock
+import sys
+
+Clock.max_iteration = sys.maxint
+
+
 
 #from kivy.properties import ObjectProperty
 
@@ -25,12 +31,15 @@ from datetime import date, timedelta
 class NonAlcogolic(App):
 
     def build(self):
-        timer = Timer()
+        settings = Settings()
+        
         myScreenmanager = ScreenManager()
         startScreen = StartScreen(name='StartScreen')
-        secondScreen = SecondScreen(name='SecondScreen', timer = timer)
-        programScreen = Program(name='ProgramScreen', timer = timer)
+        secondScreen = SecondScreen(name='SecondScreen', settings = settings)
+        programScreen = Program(name='ProgramScreen', settings = settings)
         menuScreen = Menu(name='MenuScreen')
+
+
         myScreenmanager.add_widget(startScreen)
         myScreenmanager.add_widget(secondScreen)
         myScreenmanager.add_widget(programScreen)
@@ -54,62 +63,59 @@ class StartScreen(Screen):
 class SecondScreen(Screen):
 
     def __init__(self, **kwargs):
-        super(SecondScreen, self).__init__(**kwargs)       
+        super(SecondScreen, self).__init__(**kwargs)
+        self.settings = kwargs['settings']   
         secondScreenLayout = BoxLayout()
-        oneDayBtn = Button(text="Один день", size_hint_y=None, size_y=100, on_press=self.changerOneDay)
+        oneWeekBtn = Button(text="Одну неделю", size_hint_y=None, size_y=100, on_press=self.changerOneWeek)
         oneMonthBtn = Button(text="Один месяц", size_hint_y=None, size_y=100, on_press=self.changerOneMonth)
         oneYearBtn = Button(text="Один год", size_hint_y=None, size_y=100, on_press=self.changerOneYear)
-        secondScreenLayout.add_widget(oneDayBtn)
+        secondScreenLayout.add_widget(oneWeekBtn)
         secondScreenLayout.add_widget(oneMonthBtn)
         secondScreenLayout.add_widget(oneYearBtn)
         self.add_widget(secondScreenLayout)
 
-    #тут сделать рефакторинг
-    def changerOneDay(self,*args):
-        self.deltaTime = timedelta(1)
+    def setDateParameters(self, days):     
         self.manager.current = 'ProgramScreen'
+        self.settings.startDay = date.today()
+        self.settings.finalDay = self.settings.startDay + timedelta(days)
+
+    def changerOneWeek(self,*args):
+        self.setDateParameters(7)
 
     def changerOneMonth(self,*args):
-        self.deltaTime = timedelta(30)
-        self.manager.current = 'ProgramScreen'
+        self.setDateParameters(30)
 
     def changerOneYear(self,*args):
-        self.deltaTime = timedelta(365)
-        self.manager.current = 'ProgramScreen'
+        self.setDateParameters(365)
 
 
-class Timer():
-    pass
+class Settings():
+    finalDay = date.today()
+    startDay = date.today()
 
 
 
 class Program(Screen):
     def __init__(self, **kwargs):
         super(Program, self).__init__(**kwargs)
-        self.deltaTime = timedelta(0)
+        self.settings = kwargs['settings']   
         programLayout = BoxLayout()
         menuButton = Button(text="Menu", size_hint_y=None, size_y=100, on_press=self.changer)
-  
         self.excuse = ['Я не могу больше пить', 'Принимаю антибиотки, нельзя смешивать с алкоголем - можно сдохнуть', 'Болею, доктор запретил', 'Аллергия']
-
-        #Нужны вызвать метод из другого класса или 
-        # просто забрать переменную. ПРи этом нужно помнить, 
-        # что экземпляр класса создается в самом начале, до того, 
-        # как нажата конопка
-        presentDay = date.today()
-        #finalDay = presentDay + self.deltaTime
-
-
-        self.timerOneLbl = Label(text = 'Timer 1')
-        self.timerOneLbl.text = "Сегодня" + str(presentDay)
-        timerTwoLbl = Label(text = 'Timer 2')
-        #timerTwo.text = "Финал" + str(finalDay)
+        self.timerGoneLbl = Label(text = 'Timer 1')
+        self.timerLeftLbl = Label(text = 'Timer 2')
         buttonProposal = Button(text='Мне предложили выпить', size_hint_y=None, size_y=100, on_press = self.btnPress)
         programLayout.add_widget(menuButton)       
-        programLayout.add_widget(self.timerOneLbl)
-        programLayout.add_widget(timerTwoLbl)
+        programLayout.add_widget(self.timerGoneLbl)
+        programLayout.add_widget(self.timerLeftLbl)
         programLayout.add_widget(buttonProposal)
         self.add_widget(programLayout)
+        Clock.schedule_interval(self.updateLabels, 1)
+
+    def updateLabels(self, *args):
+        currentDate = date.today()
+        self.timerGoneLbl.text = 'Прошло дней: ' + str((currentDate - self.settings.startDay).days)
+        self.timerLeftLbl.text = 'Осталось дней: ' + str((self.settings.finalDay - currentDate).days)
 
     def changer(self, *args):
         self.manager.current = 'MenuScreen'
