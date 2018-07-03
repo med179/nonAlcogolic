@@ -4,6 +4,8 @@
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.anchorlayout import AnchorLayout
+from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.widget import Widget
 from kivy.config import Config
 from kivy.uix.button import Button
 from kivy.uix.label import Label
@@ -27,9 +29,9 @@ Clock.max_iteration = sys.maxint
 #from kivy.properties import ObjectProperty
 
 
-#Config.set('graphics', 'resizable', 1)
-#Config.set('graphics', 'width', 1080)
-#Config.set('graphics', 'height', 1920)
+Config.set('graphics', 'resizable', 1)
+Config.set('graphics', 'width', 1080/3)
+Config.set('graphics', 'height', 1920/3)
 
 
 class NonAlcogolic(App):
@@ -59,9 +61,18 @@ class StartScreen(Screen):
 
     def __init__(self, **kwargs):
         super(StartScreen, self).__init__(**kwargs)
-        startScreenLayout = BoxLayout(orientation='vertical')
-        firstBtn = Button(text="Начать не пить!!!", size_hint_y=None, size_y=100, on_press=self.changer)
-        startScreenLayout.add_widget(firstBtn)
+        backgroundImg = Image(source='backgroundImg.png', allow_stretch=True)
+        
+        startScreenLayout = FloatLayout()
+        btnLayout = AnchorLayout(size_hint=[1, .5], anchor_x='center', anchor_y='center')
+#        blankOne = Widget(size_hint=[1, .5])
+#        blankTwo = Widget(size_hint=[1, .25])
+        firstBtn = Button(text="Начать не пить!!!", size_hint=[.5, .3], on_press=self.changer, background_color=(.0, .51, .56, 1), background_normal='')
+        startScreenLayout.add_widget(backgroundImg)
+#        btnLayout.add_widget(blankOne)    
+        btnLayout.add_widget(firstBtn)
+#        btnLayout.add_widget(blankTwo)       
+        startScreenLayout.add_widget(btnLayout)
         self.add_widget(startScreenLayout)
 
     def changer(self,*args):
