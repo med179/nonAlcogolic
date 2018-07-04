@@ -1,10 +1,11 @@
 # python
 # -*- coding: utf-8 -*-
-
+from kivy.graphics import *
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.gridlayout import GridLayout
 from kivy.uix.widget import Widget
 from kivy.config import Config
 from kivy.uix.button import Button
@@ -67,19 +68,20 @@ class StartScreen(Screen):
 
     def __init__(self, **kwargs):
         super(StartScreen, self).__init__(**kwargs)
-        backgroundImg = Image(source='backgroundImg.png', allow_stretch=True)
 
-        startScreenLayout = FloatLayout()
+        with self.canvas:
+            Color(rgba=[1.0 / 255.0, 172.0 / 255.0, 194.0 / 255.0, 1])
+            self.rect = Rectangle(pos=self.pos, size=self.size)
+
         btnLayout = AnchorLayout(size_hint=[1, .5], anchor_x='center', anchor_y='center')
-        #        blankOne = Widget(size_hint=[1, .5])
-        #        blankTwo = Widget(size_hint=[1, .25])
         firstBtn = Button(text="Начать не пить!!!", size_hint=[.5, .3], on_press=self.changer, background_color=(.0, .51, .56, 1), background_normal='')
-        startScreenLayout.add_widget(backgroundImg)
-        #        btnLayout.add_widget(blankOne)
         btnLayout.add_widget(firstBtn)
-        #        btnLayout.add_widget(blankTwo)
-        startScreenLayout.add_widget(btnLayout)
-        self.add_widget(startScreenLayout)
+        self.add_widget(btnLayout)
+        self.bind(pos=self.update_rect, size=self.update_rect)
+
+    def update_rect(self, *args):
+        self.rect.pos = self.pos
+        self.rect.size = self.size
 
     def changer(self, *args):
         self.manager.current = 'SecondScreen'
