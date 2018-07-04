@@ -25,7 +25,6 @@ import sys
 # Clock.max_iteration = sys.maxint
 Clock.max_iteration = 100000
 
-
 # Нормальные переходы:
 # FadeTransition
 # WipeTransition
@@ -89,7 +88,7 @@ class StartScreen(Screen):
             Color(rgba=[255.0 / 255.0, 255.0 / 255.0, 255.0 / 255.0, 1])
             self.rect = Rectangle(pos=self.pos, size=self.size)
         btnLayout = BoxLayout(orientation='horizontal')
-        centerColumnLayout = BoxLayout(orientation='vertical')          
+        centerColumnLayout = BoxLayout(orientation='vertical')
         horizontalBlancLayoutOne = Widget(size_hint=[.15, 1])
         horizontalBlancLayoutTwo = Widget(size_hint=[.15, 1])
         verticalBlancLayoutOne = Widget(size_hint=[1, .7])
@@ -101,11 +100,11 @@ class StartScreen(Screen):
             background_color=(.0, .84, .84, 1),
             # background_normal='',
             on_press=self.changer
-            )
+        )
         btnLayout.add_widget(horizontalBlancLayoutOne)
-        centerColumnLayout.add_widget(verticalBlancLayoutOne)        
+        centerColumnLayout.add_widget(verticalBlancLayoutOne)
         centerColumnLayout.add_widget(firstBtn)
-        centerColumnLayout.add_widget(verticalBlancLayoutTwo) 
+        centerColumnLayout.add_widget(verticalBlancLayoutTwo)
         btnLayout.add_widget(centerColumnLayout)
         btnLayout.add_widget(horizontalBlancLayoutTwo)
 
@@ -133,40 +132,45 @@ class SecondScreen(Screen):
         horizontalBlancLayoutTwo = Widget(size_hint=[.25, 1])
         verticalBlancLayoutOne = Widget(size_hint=[1, .1])
         verticalBlancLayoutTwo = Widget(size_hint=[1, .2])
-        buttonsLayout = BoxLayout(orientation='vertical', spacing = 30, size_hint=[1, 1])
+        buttonsLayout = BoxLayout(orientation='vertical', spacing=30, size_hint=[1, 1])
         oneWeekBtn = Button(
-            text="[size=16][color=5F3C03][b]НА[/size][size=100]1[/size][size=16]НЕДЕЛЮ[/b][/color][/size]",
+            text="[size=16][color=5F3C03][b]                                                                              НА[/size][size=100]1[/size][size=16]НЕДЕЛЮ[/b][/color][/size]",
+            halign='left',
             markup=True,
-            size_hint=[1, .15], 
-            background_color=(1, 1, 1, 1), 
+            size_hint=[1, .15],
+            background_color=(1, 1, 1, 1),
             background_normal='',
             on_press=self.changerOneWeek
-            )
-
+        )
+        oneWeekBtn.bind(size=oneWeekBtn.setter('text_size'))
         oneMonthBtn = Button(
-            text="[size=16][color=74858E][b]НА[/size][size=100]1[/size][size=16]МЕСЯЦ[/color]_[/b][/size]",
-            markup=True, 
-            size_hint=[1, .15], 
-            background_color=(1, 1, 1, 1), 
-            background_normal='', 
+            text="[size=16][color=74858E][b]                                                                              НА[/size][size=100]1[/size][size=16]МЕСЯЦ[/color][/b][/size]",
+            halign='left',
+            markup=True,
+            size_hint=[1, .15],
+            background_color=(1, 1, 1, 1),
+            background_normal='',
             on_press=self.changerOneMonth)
+        oneMonthBtn.bind(size=oneMonthBtn.setter('text_size'))
         oneYearBtn = Button(
-            text="[size=16][color=F1BA18][b]НА[/size][size=100]1[/size][size=16]ГОД[/b][/color]____[/size]",
-            markup=True, 
-            size_hint=[1, .15], 
-            background_color=(1, 1, 1, 1), 
+            text="[size=16][color=F1BA18][b]                                                                              НА[/size][size=100]1[/size][size=16]ГОД[/b][/color][/size]",
+            halign='left',
+            markup=True,
+            size_hint=[1, .15],
+            background_color=(1, 1, 1, 1),
             background_normal='',
             on_press=self.changerOneYear)
+        oneYearBtn.bind(size=oneYearBtn.setter('text_size'))
         secondScreenLayout.add_widget(horizontalBlancLayoutOne)
         buttonsLayout.add_widget(verticalBlancLayoutOne)
         buttonsLayout.add_widget(oneWeekBtn)
         buttonsLayout.add_widget(oneMonthBtn)
         buttonsLayout.add_widget(oneYearBtn)
-        buttonsLayout.add_widget(verticalBlancLayoutTwo)        
+        buttonsLayout.add_widget(verticalBlancLayoutTwo)
         secondScreenLayout.add_widget(buttonsLayout)
 
         secondScreenLayout.add_widget(horizontalBlancLayoutTwo)
-       
+
         self.add_widget(secondScreenLayout)
         self.bind(pos=self.update_rect, size=self.update_rect)
 
@@ -245,6 +249,7 @@ class MySettings(object):
             return
         super(MySettings, self).__setattr__(key, value)
 
+
 class Program(Screen):
     def __init__(self, **kwargs):
         super(Program, self).__init__(**kwargs)
@@ -316,7 +321,6 @@ class Program(Screen):
         numberOfExuse = self.excuse[randint(0, len(self.excuse) - 1)]
         popup = Popup(title="Отмазка на сегодня",
                       separator_color=(1, 1, 1, 1),
-                      back
                       content=Label(
                           text='[color=33ff33][b]' + str(numberOfExuse) + '[/b][/color]',
                           markup=True,
