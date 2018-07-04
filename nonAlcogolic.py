@@ -45,10 +45,10 @@ class NonAlcogolic(App):
         startScreen = StartScreen(name='StartScreen')
         secondScreen = SecondScreen(name='SecondScreen', settings=settings)
         programScreen = Program(name='ProgramScreen', settings=settings)
-        menuScreen = Menu(name='MenuScreen')
+        menuScreen = Menu(name='MenuScreen', settings=settings)
         warningOne = WarningOne(name='WarningOne')
         warningTwo = WarningTwo(name='WarningTwo')
-        warningThree = WarningThree(name='WarningThree')
+        warningThree = WarningThree(name='WarningThree', settings=settings)
         myScreenmanager.add_widget(startScreen)
         myScreenmanager.add_widget(secondScreen)
         myScreenmanager.add_widget(programScreen)
@@ -123,7 +123,7 @@ class MySettings(object):
 
     def __init__(self):
         self.__store = DictStore('user.dat')
-        if self.__store.store_exists('startDay'):
+        if self.__store.store_exists('startDay') and self.__store.get('startDay')['data']:
             self.__startDay = self.__store.get('startDay')['data']
             self.__finalDay = self.__store.get('finalDay')['data']
             self.__count = self.__store.get('count')['data']
@@ -150,11 +150,17 @@ class MySettings(object):
 
     def __setattr__(self, key, value):
         if key == 'startDay':
-            self.__startDay = value.strftime("%S-%M-%H %d-%m-%Y")
+            if value:
+                self.__startDay = value.strftime("%S-%M-%H %d-%m-%Y")
+            else:
+                self.__startDay = value
             self.__store.put('startDay', data=self.__startDay)
             return
         if key == 'finalDay':
-            self.__finalDay = value.strftime("%S-%M-%H %d-%m-%Y")
+            if value:
+                self.__finalDay = value.strftime("%S-%M-%H %d-%m-%Y")
+            else:
+                self.__finalDay = value
             self.__store.put('finalDay', data=self.__finalDay)
             return
         if key == 'counter':
@@ -240,9 +246,10 @@ class Menu(Screen):
 
     def __init__(self, **kwargs):
         super(Menu, self).__init__(**kwargs)
+        self.settings = kwargs['settings']
         menuScreenLayout = BoxLayout(orientation='vertical')
         returnToProgramBtn = Button(text="Закрыть меню", size_hint_y=None, size_y=100, on_press=self.changer)
-        iWantToDrinkBtn = Button(text="Я хочу выпить", size_hint_y=None, size_y=100, on_press=self.changerWarningOneScr)
+        iWantToDrinkBtn = Button(text="Перестать не пить", size_hint_y=None, size_y=100, on_press=self.changerWarningOneScr)
         iDrankItBtn = Button(text="Я выпил", size_hint_y=None, size_y=100, on_press=self.changer)
         menuScreenLayout.add_widget(returnToProgramBtn)
         menuScreenLayout.add_widget(iWantToDrinkBtn)
@@ -250,6 +257,7 @@ class Menu(Screen):
         self.add_widget(menuScreenLayout)
 
     def changer(self, *args):
+        self.settings.startDay = datetime.now()
         self.manager.current = 'ProgramScreen'
 
     def changerWarningOneScr(self, *args):
@@ -301,6 +309,7 @@ class WarningTwo(Screen):
 class WarningThree(Screen):
     def __init__(self, **kwargs):
         super(WarningThree, self).__init__(**kwargs)
+        self.settings = kwargs['settings']
         warninLayout = BoxLayout(orientation='vertical')
         lblLayout = AnchorLayout()
         warninLbl = Label(text='И после этого ты считаешь себя альфасамцом?', halign='center', valign='top')
@@ -313,6 +322,9 @@ class WarningThree(Screen):
         self.add_widget(warninLayout)
 
     def changerNext(self, *args):
+        self.settings.startDay = None
+        self.settings.finalDay = None
+        self.settings.counter = 0
         self.manager.current = 'StartScreen'
 
     def changerCancel(self, *args):
