@@ -11,14 +11,16 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from kivy.uix.image import Image
-from kivy.uix.widget import Widget
 from kivy.uix.screenmanager import Screen, ScreenManager, SlideTransition
 from random import randint
 from datetime import date, timedelta, datetime
 from kivy.clock import Clock
+from kivy.storage.dictstore import DictStore
+from os.path import join
 import sys
 
-Clock.max_iteration = sys.maxint
+# Clock.max_iteration = sys.maxint
+Clock.max_iteration = 100000
 
 
 # Нормальные переходы:
@@ -31,19 +33,14 @@ Clock.max_iteration = sys.maxint
 
 
 Config.set('graphics', 'resizable', 1)
-Config.set('graphics', 'width', 1080/3)
-Config.set('graphics', 'height', 1920/3)
+Config.set('graphics', 'width', 1080 / 3)
+Config.set('graphics', 'height', 1920 / 3)
 
 
 class NonAlcogolic(App):
-    # def build_config(self, config):
-    #    config.setdefaults('section1', {
-    #        'startDay': date.today(),
-    #        'finalDay': date.today()
-    #    })
 
     def build(self):
-        settings = Settings(self.config)
+        settings = MySettings()
         myScreenmanager = ScreenManager(transition=SlideTransition(direction='up'))
         startScreen = StartScreen(name='StartScreen')
         secondScreen = SecondScreen(name='SecondScreen', settings=settings)
@@ -59,7 +56,7 @@ class NonAlcogolic(App):
         myScreenmanager.add_widget(warningOne)
         myScreenmanager.add_widget(warningTwo)
         myScreenmanager.add_widget(warningThree)
-        if(settings.isNotReady):
+        if settings.isNotReady:
             myScreenmanager.current = 'StartScreen'
         else:
             myScreenmanager.current = 'ProgramScreen'
@@ -74,13 +71,13 @@ class StartScreen(Screen):
 
         startScreenLayout = FloatLayout()
         btnLayout = AnchorLayout(size_hint=[1, .5], anchor_x='center', anchor_y='center')
-#        blankOne = Widget(size_hint=[1, .5])
-#        blankTwo = Widget(size_hint=[1, .25])
+        #        blankOne = Widget(size_hint=[1, .5])
+        #        blankTwo = Widget(size_hint=[1, .25])
         firstBtn = Button(text="Начать не пить!!!", size_hint=[.5, .3], on_press=self.changer, background_color=(.0, .51, .56, 1), background_normal='')
         startScreenLayout.add_widget(backgroundImg)
-#        btnLayout.add_widget(blankOne)
+        #        btnLayout.add_widget(blankOne)
         btnLayout.add_widget(firstBtn)
-#        btnLayout.add_widget(blankTwo)
+        #        btnLayout.add_widget(blankTwo)
         startScreenLayout.add_widget(btnLayout)
         self.add_widget(startScreenLayout)
 
@@ -104,8 +101,8 @@ class SecondScreen(Screen):
 
     def setDateParameters(self, days):
         self.manager.current = 'ProgramScreen'
-        self.settings.startDay = date.today()
-        self.settings.finalDay = self.settings.startDay + timedelta(days)
+        self.settings.startDay = datetime.now()
+        self.settings.finalDay = date.today() + timedelta(days)
 
     def changerOneWeek(self, *args):
         self.setDateParameters(7)
@@ -117,47 +114,66 @@ class SecondScreen(Screen):
         self.setDateParameters(365)
 
 
-class Settings:
-    def __init__(self, config):
-        self.config = config
-        self._finalDay = Config.getdefault('nonalco', 'startDay', None)
-        self._startDay = Config.getdefault('nonalco', 'finalDay', None)
-        self._isNotReady = False
+class MySettings(object):
+    __finalDay = None
+    __startDay = None
+    __count = 0
+    __isNotReady = True
+    __store = None
 
-    def parseDate(dateText):
+    def __init__(self):
+        self.__store = DictStore('user.dat')
+        if self.__store.store_exists('startDay'):
+            self.__startDay = self.__store.get('startDay')['data']
+            self.__finalDay = self.__store.get('finalDay')['data']
+            self.__count = self.__store.get('count')['data']
+            self.__isNotReady = False
+        else:
+            self.__isNotReady = True
+
+    def parseDate(self, dateText):
         if dateText:
-            return datetime
+            return datetime.strptime(dateText, "%S-%M-%H %d-%m-%Y")
         else:
             None
 
-    def __getattr__(self, item):
-        if item == 'isNotReady':
-            return self._isNotReady
-        if item == 'startDay':
-            return Settings.parseDate(self._startDay)
-        if item == 'finalDay':
-            return Settings.parseDate(self._finalDay)
-        raise AttributeError
+    def __getattr__(self, attr):
+        if attr == 'isNotReady':
+            return self.__isNotReady
+        if attr == 'startDay':
+            return self.parseDate(self.__startDay)
+        if attr == 'finalDay':
+            return self.parseDate(self.__finalDay)
+        if attr == 'counter':
+            return self.__count
+        return None
 
     def __setattr__(self, key, value):
         if key == 'startDay':
-            self._startDay = value
+            self.__startDay = value.strftime("%S-%M-%H %d-%m-%Y")
+            self.__store.put('startDay', data=self.__startDay)
+            return
         if key == 'finalDay':
-            self._finalDay = value
-
+            self.__finalDay = value.strftime("%S-%M-%H %d-%m-%Y")
+            self.__store.put('finalDay', data=self.__finalDay)
+            return
+        if key == 'counter':
+            self.__count = value
+            self.__store.put('count', data=value)
+            return
+        super(MySettings, self).__setattr__(key, value)
 
 class Program(Screen):
     def __init__(self, **kwargs):
         super(Program, self).__init__(**kwargs)
-        self.counter = 0
         self.settings = kwargs['settings']
         programLayout = BoxLayout(orientation='vertical')
         menuButton = Button(text="Menu", size_hint_y=None, size_y=100, on_press=self.changer)
         self.excuse = ['Я не могу больше пить', 'Принимаю антибиотки, нельзя смешивать с алкоголем - можно сдохнуть',
                        'Болею, доктор запретил', 'Аллергия']
-        self.counterLbl = Label(text='Получено предложений выпить: 0')
-        self.timerGoneLbl = Label(text='Timer 1')
-        self.timerLeftLbl = Label(text='Timer 2')
+        self.counterLbl = Label(text='Получено предложений выпить: ' + str(self.settings.counter))
+        self.timerGoneLbl = Label(text='')
+        self.timerLeftLbl = Label(text='')
         buttonProposal = Button(text='Мне предложили выпить', size_hint_y=None, size_y=100, on_press=self.btnPress)
         programLayout.add_widget(menuButton)
         programLayout.add_widget(self.counterLbl)
@@ -168,16 +184,44 @@ class Program(Screen):
         Clock.schedule_interval(self.updateLabels, 1)
 
     def updateLabels(self, *args):
-        currentDate = date.today()
-        self.timerGoneLbl.text = 'Прошло дней: ' + str((currentDate - self.settings.startDay).days)
-        self.timerLeftLbl.text = 'Осталось дней: ' + str((self.settings.finalDay - currentDate).days)
-        self.counterLbl.text = 'Получено предложений выпить: ' + str(self.counter)
+        if self.settings.finalDay:
+            currentDate = datetime.now()
+            diffGone = currentDate - self.settings.startDay
+            diffLeft = self.settings.finalDay - currentDate
+            self.timerGoneLbl.text = self.getTextCountGone(diffGone)
+            self.timerLeftLbl.text = self.getTextCountLeft(diffLeft)
+            self.counterLbl.text = 'Получено предложений выпить: ' + str(self.settings.counter)
+
+    def getTextCountGone(self, diff):
+        if diff.days <= 0:
+            if diff.seconds < 60:
+                secondsText = " секунд"
+                diffChk = diff.seconds % 10
+                if diffChk == 1 and diff.seconds != 11:
+                    secondsText = " секунда"
+                if diffChk > 1 and diffChk < 5:
+                    secondsText = " секунды"
+                return 'Прошло ' + str(diff.seconds) + secondsText
+            else:
+                minuteText = " минут"
+                diffMinutes = diff.seconds / 60
+                diffChk = diffMinutes % 10
+                if diffChk == 1 and diffMinutes != 11:
+                    minuteText = " минута"
+                if diffChk > 1 and diffChk < 5:
+                    minuteText = " минуты"
+                return 'Прошло ' + str(diffMinutes / 60) + " часов " + str(diffMinutes) + minuteText
+        else:
+            return 'Прошло дней: ' + str(diff.days)
+
+    def getTextCountLeft(self, diff):
+        return 'Осталось дней: ' + str(diff.days)
 
     def changer(self, *args):
         self.manager.current = 'MenuScreen'
 
     def btnPress(self, *args):
-        self.counter += 1
+        self.settings.counter += 1
         # всплывает попап с отмазкой
         numberOfExuse = self.excuse[randint(0, len(self.excuse) - 1)]
         popup = Popup(title="Отмазка на сегодня",
@@ -217,8 +261,7 @@ class WarningOne(Screen):
         super(WarningOne, self).__init__(**kwargs)
         warninLayout = BoxLayout(orientation='vertical')
         lblLayout = AnchorLayout()
-        warninLbl = Label(text='Ты же обещал не пить! Мужик всегда держит слово. Ты что, не мужик?', halign='center',
-                          valign='top')
+        warninLbl = Label(text='Ты же обещал не пить! Мужик всегда держит слово. Ты что, не мужик?', halign='center', valign='top')
         lblLayout.add_widget(warninLbl)
         warninBtn = Button(text="Я не мужик", size_hint_y=None, size_y=100, on_press=self.changerNext)
         cancelBtn = Button(text="Ok, не буду пить.", size_hint_y=None, size_y=100, on_press=self.changerCancel)
@@ -239,12 +282,10 @@ class WarningTwo(Screen):
         super(WarningTwo, self).__init__(**kwargs)
         warninLayout = BoxLayout(orientation='vertical')
         lblLayout = AnchorLayout()
-        warninLbl = Label(text='Как ты потом будешь смотреть в глаза своим друзьям, которые верили тебе?',
-                          halign='center', valign='top')
+        warninLbl = Label(text='Как ты потом будешь смотреть в глаза своим друзьям, которые верили тебе?', halign='center', valign='top')
         lblLayout.add_widget(warninLbl)
         warninBtn = Button(text="Никак, я дерьмо.", size_hint_y=None, size_y=100, on_press=self.changerNext)
-        cancelBtn = Button(text="Ладно, я передумал. Не буду пить.", size_hint_y=None, size_y=100,
-                           on_press=self.changerCancel)
+        cancelBtn = Button(text="Ладно, я передумал. Не буду пить.", size_hint_y=None, size_y=100, on_press=self.changerCancel)
         warninLayout.add_widget(lblLayout)
         warninLayout.add_widget(warninBtn)
         warninLayout.add_widget(cancelBtn)
@@ -265,8 +306,7 @@ class WarningThree(Screen):
         warninLbl = Label(text='И после этого ты считаешь себя альфасамцом?', halign='center', valign='top')
         lblLayout.add_widget(warninLbl)
         warninBtn = Button(text="Нет, я лох.", size_hint_y=None, size_y=100, on_press=self.changerNext)
-        cancelBtn = Button(text="Я не буду так больше. Извините.", size_hint_y=None, size_y=100,
-                           on_press=self.changerCancel)
+        cancelBtn = Button(text="Я не буду так больше. Извините.", size_hint_y=None, size_y=100, on_press=self.changerCancel)
         warninLayout.add_widget(lblLayout)
         warninLayout.add_widget(warninBtn)
         warninLayout.add_widget(cancelBtn)
