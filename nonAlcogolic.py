@@ -13,7 +13,7 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from kivy.uix.image import Image
-from kivy.uix.screenmanager import Screen, ScreenManager, SlideTransition
+from kivy.uix.screenmanager import Screen, ScreenManager, FadeTransition
 from random import randint
 from datetime import date, timedelta, datetime
 from kivy.clock import Clock
@@ -59,7 +59,7 @@ class NonAlcogolic(App):
 
     def build(self):
         settings = MySettings()
-        myScreenmanager = ScreenManager(transition=SlideTransition(direction='up'))
+        myScreenmanager = ScreenManager(transition=FadeTransition(direction='up'))
         startScreen = StartScreen(name='StartScreen')
         secondScreen = SecondScreen(name='SecondScreen', settings=settings)
         programScreen = Program(name='ProgramScreen', settings=settings)
@@ -136,7 +136,7 @@ class SecondScreen(Screen):
         buttonsLayout = BoxLayout(orientation='vertical', spacing = 30, size_hint=[1, 1])
         oneWeekBtn = Button(
             text="[size=16][color=5F3C03][b]НА[/size][size=100]1[/size][size=16]НЕДЕЛЮ[/b][/color][/size]",
-            markup=True, 
+            markup=True,
             size_hint=[1, .15], 
             background_color=(1, 1, 1, 1), 
             background_normal='',
@@ -144,14 +144,14 @@ class SecondScreen(Screen):
             )
 
         oneMonthBtn = Button(
-            text="[size=16][color=74858E][b]НА[/size][size=100]1[/size][size=16]МЕСЯЦ[/b][/color][/size]",
+            text="[size=16][color=74858E][b]НА[/size][size=100]1[/size][size=16]МЕСЯЦ[/color]_[/b][/size]",
             markup=True, 
             size_hint=[1, .15], 
             background_color=(1, 1, 1, 1), 
             background_normal='', 
             on_press=self.changerOneMonth)
         oneYearBtn = Button(
-            text="[size=16][color=F1BA18][b]НА[/size][size=100]1[/size][size=16]ГОД[/b][/color][/size]",
+            text="[size=16][color=F1BA18][b]НА[/size][size=100]1[/size][size=16]ГОД[/b][/color]____[/size]",
             markup=True, 
             size_hint=[1, .15], 
             background_color=(1, 1, 1, 1), 
@@ -315,7 +315,8 @@ class Program(Screen):
         # всплывает попап с отмазкой
         numberOfExuse = self.excuse[randint(0, len(self.excuse) - 1)]
         popup = Popup(title="Отмазка на сегодня",
-                      separator_color=(0, 0, 1, 1),
+                      separator_color=(1, 1, 1, 1),
+                      back
                       content=Label(
                           text='[color=33ff33][b]' + str(numberOfExuse) + '[/b][/color]',
                           markup=True,
