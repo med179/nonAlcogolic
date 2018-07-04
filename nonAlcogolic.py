@@ -207,7 +207,7 @@ class Program(Screen):
                 diffChk = diff.seconds % 10
                 if diffChk == 1 and diff.seconds != 11:
                     secondsText = " секунда"
-                if diffChk > 1 and diffChk < 5:
+                if 1 < diffChk < 5 and not [12, 13, 14].__contains__(diff.seconds):
                     secondsText = " секунды"
                 return 'Прошло ' + str(diff.seconds) + secondsText
             else:
@@ -216,7 +216,7 @@ class Program(Screen):
                 diffChk = diffMinutes % 10
                 if diffChk == 1 and diffMinutes != 11:
                     minuteText = " минута"
-                if diffChk > 1 and diffChk < 5:
+                if 1 < diffChk < 5 and not [12, 13, 14].__contains__(diffMinutes):
                     minuteText = " минуты"
                 return 'Прошло ' + str(diffMinutes / 60) + " часов " + str(diffMinutes) + minuteText
         else:
