@@ -69,11 +69,25 @@ class StartScreen(Screen):
     def __init__(self, **kwargs):
         super(StartScreen, self).__init__(**kwargs)
         with self.canvas:
-            Color(rgba=[1.0 / 255.0, 172.0 / 255.0, 194.0 / 255.0, 1])
+            Color(rgba=[255.0 / 255.0, 255.0 / 255.0, 255.0 / 255.0, 1])
             self.rect = Rectangle(pos=self.pos, size=self.size)
-        btnLayout = AnchorLayout(size_hint=[1, .5], anchor_x='center', anchor_y='center')
-        firstBtn = Button(text="Начать не пить!!!", size_hint=[.5, .3], on_press=self.changer, background_color=(.0, .51, .56, 1), background_normal='')
-        btnLayout.add_widget(firstBtn)
+        btnLayout = BoxLayout(orientation='horizontal')
+        centerColumnLayout = BoxLayout(orientation='vertical')          
+        horizontalBlancLayoutOne = Widget(size_hint=[.15, 1])
+        horizontalBlancLayoutTwo = Widget(size_hint=[.15, 1])
+        verticalBlancLayoutOne = Widget(size_hint=[1, .7])
+        verticalBlancLayoutTwo = Widget(size_hint=[1, .07])              
+                        
+        firstBtn = Button(text="[b]ПЕРЕСТАТЬ ПИТЬ![/b]", markup=True, size_hint=[1, .06], on_press=self.changer, background_color=(.0, .84, .84, 1), background_normal='')
+
+        btnLayout.add_widget(horizontalBlancLayoutOne)
+
+        centerColumnLayout.add_widget(verticalBlancLayoutOne)        
+        centerColumnLayout.add_widget(firstBtn)
+        centerColumnLayout.add_widget(verticalBlancLayoutTwo) 
+        btnLayout.add_widget(centerColumnLayout)
+        btnLayout.add_widget(horizontalBlancLayoutTwo)
+
         self.add_widget(btnLayout)
         self.bind(pos=self.update_rect, size=self.update_rect)
 
@@ -93,17 +107,25 @@ class SecondScreen(Screen):
             Color(rgba=[1.0 / 255.0, 172.0 / 255.0, 194.0 / 255.0, 1])
             self.rect = Rectangle(pos=self.pos, size=self.size)
         self.settings = kwargs['settings']
-        secondScreenLayout = BoxLayout(orientation='vertical')
-        buttonsLayout = BoxLayout(orientation='vertical', spasing = 10 )
-        oneWeekBtn = Button(text="Одну неделю", size_hint_y=None, size_y=100, on_press=self.changerOneWeek)
-        oneMonthBtn = Button(text="Один месяц", size_hint_y=None, size_y=100, on_press=self.changerOneMonth)
-        oneYearBtn = Button(text="Один год", size_hint_y=None, size_y=100, on_press=self.changerOneYear)
-        secondScreenLayout.add_widget(oneWeekBtn)
-        secondScreenLayout.add_widget(oneMonthBtn)
-        secondScreenLayout.add_widget(oneYearBtn)
+        secondScreenLayout = BoxLayout(orientation='horizontal')
+        blancLayout = Widget(size_hint=[.25, 1])
+        buttonsLayout = BoxLayout(orientation='vertical', spacing = 10, size_hint=[1, .3])
+        oneWeekBtn = Button(text="Одну неделю", size_hint=[.33, .1], on_press=self.changerOneWeek)
+        oneMonthBtn = Button(text="Один месяц", size_hint=[.5, .1], on_press=self.changerOneMonth)
+        oneYearBtn = Button(text="Один год", size_hint=[.5, .1], on_press=self.changerOneYear)
+        secondScreenLayout.add_widget(blancLayout)
+        buttonsLayout.add_widget(oneWeekBtn)
+        buttonsLayout.add_widget(oneMonthBtn)
+        buttonsLayout.add_widget(oneYearBtn)
+
+        secondScreenLayout.add_widget(buttonsLayout)
+       
         self.add_widget(secondScreenLayout)
         self.bind(pos=self.update_rect, size=self.update_rect)
 
+    def update_rect(self, *args):
+        self.rect.pos = self.pos
+        self.rect.size = self.size
 
     def setDateParameters(self, days):
         self.manager.current = 'ProgramScreen'
@@ -199,6 +221,10 @@ class Program(Screen):
         Clock.schedule_interval(self.updateLabels, 1)
         self.bind(pos=self.update_rect, size=self.update_rect)
 
+    def update_rect(self, *args):
+        self.rect.pos = self.pos
+        self.rect.size = self.size
+
     def updateLabels(self, *args):
         if self.settings.finalDay:
             currentDate = datetime.now()
@@ -270,6 +296,10 @@ class Menu(Screen):
         self.add_widget(menuScreenLayout)
         self.bind(pos=self.update_rect, size=self.update_rect)
 
+    def update_rect(self, *args):
+        self.rect.pos = self.pos
+        self.rect.size = self.size
+
     def changer(self, *args):
         self.settings.startDay = datetime.now()
         self.manager.current = 'ProgramScreen'
@@ -296,6 +326,10 @@ class WarningOne(Screen):
         self.add_widget(warninLayout)
         self.bind(pos=self.update_rect, size=self.update_rect)
 
+    def update_rect(self, *args):
+        self.rect.pos = self.pos
+        self.rect.size = self.size
+
     def changerNext(self, *args):
         self.manager.current = 'WarningTwo'
 
@@ -320,6 +354,10 @@ class WarningTwo(Screen):
         warninLayout.add_widget(cancelBtn)
         self.add_widget(warninLayout)
         self.bind(pos=self.update_rect, size=self.update_rect)
+
+    def update_rect(self, *args):
+        self.rect.pos = self.pos
+        self.rect.size = self.size
 
     def changerNext(self, *args):
         self.manager.current = 'WarningThree'
@@ -346,6 +384,10 @@ class WarningThree(Screen):
         warninLayout.add_widget(cancelBtn)
         self.add_widget(warninLayout)
         self.bind(pos=self.update_rect, size=self.update_rect)
+
+    def update_rect(self, *args):
+        self.rect.pos = self.pos
+        self.rect.size = self.size
 
     def changerNext(self, *args):
         self.settings.startDay = None
