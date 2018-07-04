@@ -68,11 +68,9 @@ class StartScreen(Screen):
 
     def __init__(self, **kwargs):
         super(StartScreen, self).__init__(**kwargs)
-
         with self.canvas:
             Color(rgba=[1.0 / 255.0, 172.0 / 255.0, 194.0 / 255.0, 1])
             self.rect = Rectangle(pos=self.pos, size=self.size)
-
         btnLayout = AnchorLayout(size_hint=[1, .5], anchor_x='center', anchor_y='center')
         firstBtn = Button(text="Начать не пить!!!", size_hint=[.5, .3], on_press=self.changer, background_color=(.0, .51, .56, 1), background_normal='')
         btnLayout.add_widget(firstBtn)
@@ -91,8 +89,12 @@ class SecondScreen(Screen):
 
     def __init__(self, **kwargs):
         super(SecondScreen, self).__init__(**kwargs)
+        with self.canvas:
+            Color(rgba=[1.0 / 255.0, 172.0 / 255.0, 194.0 / 255.0, 1])
+            self.rect = Rectangle(pos=self.pos, size=self.size)
         self.settings = kwargs['settings']
         secondScreenLayout = BoxLayout(orientation='vertical')
+        buttonsLayout = BoxLayout(orientation='vertical', spasing = 10 )
         oneWeekBtn = Button(text="Одну неделю", size_hint_y=None, size_y=100, on_press=self.changerOneWeek)
         oneMonthBtn = Button(text="Один месяц", size_hint_y=None, size_y=100, on_press=self.changerOneMonth)
         oneYearBtn = Button(text="Один год", size_hint_y=None, size_y=100, on_press=self.changerOneYear)
@@ -100,6 +102,8 @@ class SecondScreen(Screen):
         secondScreenLayout.add_widget(oneMonthBtn)
         secondScreenLayout.add_widget(oneYearBtn)
         self.add_widget(secondScreenLayout)
+        self.bind(pos=self.update_rect, size=self.update_rect)
+
 
     def setDateParameters(self, days):
         self.manager.current = 'ProgramScreen'
@@ -174,6 +178,9 @@ class MySettings(object):
 class Program(Screen):
     def __init__(self, **kwargs):
         super(Program, self).__init__(**kwargs)
+        with self.canvas:
+            Color(rgba=[1.0 / 255.0, 172.0 / 255.0, 194.0 / 255.0, 1])
+            self.rect = Rectangle(pos=self.pos, size=self.size)
         self.settings = kwargs['settings']
         programLayout = BoxLayout(orientation='vertical')
         menuButton = Button(text="Menu", size_hint_y=None, size_y=100, on_press=self.changer)
@@ -190,6 +197,7 @@ class Program(Screen):
         programLayout.add_widget(buttonProposal)
         self.add_widget(programLayout)
         Clock.schedule_interval(self.updateLabels, 1)
+        self.bind(pos=self.update_rect, size=self.update_rect)
 
     def updateLabels(self, *args):
         if self.settings.finalDay:
@@ -248,6 +256,9 @@ class Menu(Screen):
 
     def __init__(self, **kwargs):
         super(Menu, self).__init__(**kwargs)
+        with self.canvas:
+            Color(rgba=[1.0 / 255.0, 172.0 / 255.0, 194.0 / 255.0, 1])
+            self.rect = Rectangle(pos=self.pos, size=self.size)
         self.settings = kwargs['settings']
         menuScreenLayout = BoxLayout(orientation='vertical')
         returnToProgramBtn = Button(text="Закрыть меню", size_hint_y=None, size_y=100, on_press=self.changer)
@@ -257,6 +268,7 @@ class Menu(Screen):
         menuScreenLayout.add_widget(iWantToDrinkBtn)
         menuScreenLayout.add_widget(iDrankItBtn)
         self.add_widget(menuScreenLayout)
+        self.bind(pos=self.update_rect, size=self.update_rect)
 
     def changer(self, *args):
         self.settings.startDay = datetime.now()
@@ -269,6 +281,9 @@ class Menu(Screen):
 class WarningOne(Screen):
     def __init__(self, **kwargs):
         super(WarningOne, self).__init__(**kwargs)
+        with self.canvas:
+            Color(rgba=[1.0 / 255.0, 172.0 / 255.0, 194.0 / 255.0, 1])
+            self.rect = Rectangle(pos=self.pos, size=self.size)
         warninLayout = BoxLayout(orientation='vertical')
         lblLayout = AnchorLayout()
         warninLbl = Label(text='Ты же обещал не пить! Мужик всегда держит слово. Ты что, не мужик?', halign='center', valign='top')
@@ -279,6 +294,7 @@ class WarningOne(Screen):
         warninLayout.add_widget(warninBtn)
         warninLayout.add_widget(cancelBtn)
         self.add_widget(warninLayout)
+        self.bind(pos=self.update_rect, size=self.update_rect)
 
     def changerNext(self, *args):
         self.manager.current = 'WarningTwo'
@@ -290,6 +306,9 @@ class WarningOne(Screen):
 class WarningTwo(Screen):
     def __init__(self, **kwargs):
         super(WarningTwo, self).__init__(**kwargs)
+        with self.canvas:
+            Color(rgba=[1.0 / 255.0, 172.0 / 255.0, 194.0 / 255.0, 1])
+            self.rect = Rectangle(pos=self.pos, size=self.size)
         warninLayout = BoxLayout(orientation='vertical')
         lblLayout = AnchorLayout()
         warninLbl = Label(text='Как ты потом будешь смотреть в глаза своим друзьям, которые верили тебе?', halign='center', valign='top')
@@ -300,6 +319,7 @@ class WarningTwo(Screen):
         warninLayout.add_widget(warninBtn)
         warninLayout.add_widget(cancelBtn)
         self.add_widget(warninLayout)
+        self.bind(pos=self.update_rect, size=self.update_rect)
 
     def changerNext(self, *args):
         self.manager.current = 'WarningThree'
@@ -311,6 +331,9 @@ class WarningTwo(Screen):
 class WarningThree(Screen):
     def __init__(self, **kwargs):
         super(WarningThree, self).__init__(**kwargs)
+        with self.canvas:
+            Color(rgba=[1.0 / 255.0, 172.0 / 255.0, 194.0 / 255.0, 1])
+            self.rect = Rectangle(pos=self.pos, size=self.size)
         self.settings = kwargs['settings']
         warninLayout = BoxLayout(orientation='vertical')
         lblLayout = AnchorLayout()
@@ -322,6 +345,7 @@ class WarningThree(Screen):
         warninLayout.add_widget(warninBtn)
         warninLayout.add_widget(cancelBtn)
         self.add_widget(warninLayout)
+        self.bind(pos=self.update_rect, size=self.update_rect)
 
     def changerNext(self, *args):
         self.settings.startDay = None
