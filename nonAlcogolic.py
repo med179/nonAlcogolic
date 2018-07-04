@@ -125,23 +125,46 @@ class SecondScreen(Screen):
     def __init__(self, **kwargs):
         super(SecondScreen, self).__init__(**kwargs)
         with self.canvas:
-            Color(rgba=[1.0 / 255.0, 172.0 / 255.0, 194.0 / 255.0, 1])
+            Color(rgba=[255.0 / 255.0, 255.0 / 255.0, 255.0 / 255.0, 1])
             self.rect = Rectangle(pos=self.pos, size=self.size)
         self.settings = kwargs['settings']
         secondScreenLayout = BoxLayout(orientation='horizontal')
         horizontalBlancLayoutOne = Widget(size_hint=[.25, 1])
         horizontalBlancLayoutTwo = Widget(size_hint=[.25, 1])
-        buttonsLayout = BoxLayout(orientation='vertical', spacing = 10, size_hint=[1, .3])
-        oneWeekBtn = Button(text="Одну неделю", size_hint=[.33, .1], on_press=self.changerOneWeek)
-        oneMonthBtn = Button(text="Один месяц", size_hint=[.5, .1], on_press=self.changerOneMonth)
-        oneYearBtn = Button(text="Один год", size_hint=[.5, .1], on_press=self.changerOneYear)
-        secondScreenLayout.add_widget(horizontalBlancLayoutOne)
+        verticalBlancLayoutOne = Widget(size_hint=[1, .1])
+        verticalBlancLayoutTwo = Widget(size_hint=[1, .2])
+        buttonsLayout = BoxLayout(orientation='vertical', spacing = 30, size_hint=[1, 1])
+        oneWeekBtn = Button(
+            text="[size=16][color=5F3C03][b]НА[/size][size=100]1[/size][size=16]НЕДЕЛЮ[/b][/color][/size]",
+            markup=True, 
+            size_hint=[1, .15], 
+            background_color=(1, 1, 1, 1), 
+            background_normal='',
+            on_press=self.changerOneWeek
+            )
 
+        oneMonthBtn = Button(
+            text="[size=16][color=74858E][b]НА[/size][size=100]1[/size][size=16]МЕСЯЦ[/b][/color][/size]",
+            markup=True, 
+            size_hint=[1, .15], 
+            background_color=(1, 1, 1, 1), 
+            background_normal='', 
+            on_press=self.changerOneMonth)
+        oneYearBtn = Button(
+            text="[size=16][color=F1BA18][b]НА[/size][size=100]1[/size][size=16]ГОД[/b][/color][/size]",
+            markup=True, 
+            size_hint=[1, .15], 
+            background_color=(1, 1, 1, 1), 
+            background_normal='',
+            on_press=self.changerOneYear)
+        secondScreenLayout.add_widget(horizontalBlancLayoutOne)
+        buttonsLayout.add_widget(verticalBlancLayoutOne)
         buttonsLayout.add_widget(oneWeekBtn)
         buttonsLayout.add_widget(oneMonthBtn)
         buttonsLayout.add_widget(oneYearBtn)
+        buttonsLayout.add_widget(verticalBlancLayoutTwo)        
         secondScreenLayout.add_widget(buttonsLayout)
-        
+
         secondScreenLayout.add_widget(horizontalBlancLayoutTwo)
        
         self.add_widget(secondScreenLayout)
