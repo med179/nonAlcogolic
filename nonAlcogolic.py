@@ -1,26 +1,22 @@
 # python
 # -*- coding: utf-8 -*-
-from kivy.graphics import *
+
+from datetime import date, timedelta, datetime
+from random import randint
+
 from kivy.app import App
-from kivy.lang import Builder
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.anchorlayout import AnchorLayout
-from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.widget import Widget
+from kivy.clock import Clock
 from kivy.config import Config
+from kivy.graphics import *
+from kivy.graphics.vertex_instructions import RoundedRectangle
+from kivy.storage.dictstore import DictStore
+from kivy.uix.anchorlayout import AnchorLayout
+from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
-from kivy.uix.image import Image
 from kivy.uix.screenmanager import Screen, ScreenManager, FadeTransition
-from random import randint
-from datetime import date, timedelta, datetime
-from kivy.clock import Clock
-from kivy.storage.dictstore import DictStore
-from kivy.graphics.vertex_instructions import RoundedRectangle
-from os.path import join
-import sys
+from kivy.uix.widget import Widget
 
 # Clock.max_iteration = sys.maxint
 Clock.max_iteration = 100000
@@ -58,7 +54,7 @@ class NonAlcogolic(App):
 
     def build(self):
         settings = MySettings()
-        myScreenmanager = ScreenManager(transition=FadeTransition(direction='up'))
+        myScreenmanager = ScreenManager(transition=FadeTransition())
         startScreen = StartScreen(name='StartScreen')
         secondScreen = SecondScreen(name='SecondScreen', settings=settings)
         programScreen = Program(name='ProgramScreen', settings=settings)
