@@ -76,12 +76,16 @@ class StartScreen(Screen):
         horizontalBlancLayoutOne = Widget(size_hint=[.15, 1])
         horizontalBlancLayoutTwo = Widget(size_hint=[.15, 1])
         verticalBlancLayoutOne = Widget(size_hint=[1, .7])
-        verticalBlancLayoutTwo = Widget(size_hint=[1, .07])              
-                        
-        firstBtn = Button(text="[b]ПЕРЕСТАТЬ ПИТЬ![/b]", markup=True, size_hint=[1, .06], on_press=self.changer, background_color=(.0, .84, .84, 1), background_normal='')
-
+        verticalBlancLayoutTwo = Widget(size_hint=[1, .07])                                     
+        firstBtn = Button(
+            text="[b]ПЕРЕСТАТЬ ПИТЬ![/b]", 
+            markup=True, 
+            size_hint=[1, .06], 
+            on_press=self.changer, 
+            background_color=(.0, .84, .84, 1), 
+            background_normal=''
+            )
         btnLayout.add_widget(horizontalBlancLayoutOne)
-
         centerColumnLayout.add_widget(verticalBlancLayoutOne)        
         centerColumnLayout.add_widget(firstBtn)
         centerColumnLayout.add_widget(verticalBlancLayoutTwo) 
@@ -108,17 +112,20 @@ class SecondScreen(Screen):
             self.rect = Rectangle(pos=self.pos, size=self.size)
         self.settings = kwargs['settings']
         secondScreenLayout = BoxLayout(orientation='horizontal')
-        blancLayout = Widget(size_hint=[.25, 1])
+        horizontalBlancLayoutOne = Widget(size_hint=[.25, 1])
+        horizontalBlancLayoutTwo = Widget(size_hint=[.25, 1])
         buttonsLayout = BoxLayout(orientation='vertical', spacing = 10, size_hint=[1, .3])
         oneWeekBtn = Button(text="Одну неделю", size_hint=[.33, .1], on_press=self.changerOneWeek)
         oneMonthBtn = Button(text="Один месяц", size_hint=[.5, .1], on_press=self.changerOneMonth)
         oneYearBtn = Button(text="Один год", size_hint=[.5, .1], on_press=self.changerOneYear)
-        secondScreenLayout.add_widget(blancLayout)
+        secondScreenLayout.add_widget(horizontalBlancLayoutOne)
+
         buttonsLayout.add_widget(oneWeekBtn)
         buttonsLayout.add_widget(oneMonthBtn)
         buttonsLayout.add_widget(oneYearBtn)
-
         secondScreenLayout.add_widget(buttonsLayout)
+        
+        secondScreenLayout.add_widget(horizontalBlancLayoutTwo)
        
         self.add_widget(secondScreenLayout)
         self.bind(pos=self.update_rect, size=self.update_rect)
