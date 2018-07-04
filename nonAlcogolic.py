@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from kivy.graphics import *
 from kivy.app import App
+from kivy.lang import Builder
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.floatlayout import FloatLayout
@@ -17,6 +18,7 @@ from random import randint
 from datetime import date, timedelta, datetime
 from kivy.clock import Clock
 from kivy.storage.dictstore import DictStore
+from kivy.graphics.vertex_instructions import RoundedRectangle
 from os.path import join
 import sys
 
@@ -34,8 +36,23 @@ Clock.max_iteration = 100000
 
 
 Config.set('graphics', 'resizable', 1)
-Config.set('graphics', 'width', 1080 / 3)
-Config.set('graphics', 'height', 1920 / 3)
+Config.set('graphics', 'width', 1080)
+Config.set('graphics', 'height', 1920)
+
+
+class RoundedButton(Button):
+    def __init__(self, **kwargs):
+        super(RoundedButton, self).__init__(**kwargs)
+        background_color = self.background_color
+        self.background_color = (0, 0, 0, 0)
+        with self.canvas.before:
+            Color(rgba=background_color)
+            self.rect = RoundedRectangle(pos=self.pos, size=self.size, radius=[20, ])
+        self.bind(pos=self.update_rect, size=self.update_rect)
+
+    def update_rect(self, *args):
+        self.rect.pos = self.pos
+        self.rect.size = self.size
 
 
 class NonAlcogolic(App):
@@ -76,14 +93,14 @@ class StartScreen(Screen):
         horizontalBlancLayoutOne = Widget(size_hint=[.15, 1])
         horizontalBlancLayoutTwo = Widget(size_hint=[.15, 1])
         verticalBlancLayoutOne = Widget(size_hint=[1, .7])
-        verticalBlancLayoutTwo = Widget(size_hint=[1, .07])                                     
-        firstBtn = Button(
-            text="[b]ПЕРЕСТАТЬ ПИТЬ![/b]", 
-            markup=True, 
-            size_hint=[1, .06], 
-            on_press=self.changer, 
-            background_color=(.0, .84, .84, 1), 
-            background_normal=''
+        verticalBlancLayoutTwo = Widget(size_hint=[1, .07])
+        firstBtn = RoundedButton(
+            text="[size=50][font=Roboto][b]ПЕРЕСТАТЬ ПИТЬ![/b][/font][/size]",
+            markup=True,
+            size_hint=[1, .06],
+            background_color=(.0, .84, .84, 1),
+            # background_normal='',
+            on_press=self.changer
             )
         btnLayout.add_widget(horizontalBlancLayoutOne)
         centerColumnLayout.add_widget(verticalBlancLayoutOne)        
