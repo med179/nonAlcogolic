@@ -132,6 +132,7 @@ class MySettings(object):
             self.__isNotReady = False
         else:
             self.__isNotReady = True
+            self.__store.put('count', data=0)
 
     def parseDate(self, dateText):
         if dateText:
@@ -200,25 +201,25 @@ class Program(Screen):
             self.timerLeftLbl.text = self.getTextCountLeft(diffLeft)
             self.counterLbl.text = 'Получено предложений выпить: ' + str(self.settings.counter)
 
+    def getNumOfVariant(self, num):
+        chk = num % 10
+        if chk == 1 and num != 11:
+            return 0
+        if 1 < chk < 5 and not [12, 13, 14].__contains__(num):
+            return 1
+        return 2
+
     def getTextCountGone(self, diff):
+        secondsNames = [' секунда ', ' секунды ', ' секунд ']
+        minutesNames = [' минута ', ' минуты ', ' минут ']
+        hoursNames = [' час ', ' часа ', ' часов ']
         if diff.days <= 0:
             if diff.seconds < 60:
-                secondsText = " секунд"
-                diffChk = diff.seconds % 10
-                if diffChk == 1 and diff.seconds != 11:
-                    secondsText = " секунда"
-                if 1 < diffChk < 5 and not [12, 13, 14].__contains__(diff.seconds):
-                    secondsText = " секунды"
-                return 'Прошло ' + str(diff.seconds) + secondsText
+                return 'Прошло ' + str(diff.seconds) + secondsNames[self.getNumOfVariant(diff.seconds)]
             else:
-                minuteText = " минут"
                 diffMinutes = diff.seconds / 60
-                diffChk = diffMinutes % 10
-                if diffChk == 1 and diffMinutes != 11:
-                    minuteText = " минута"
-                if 1 < diffChk < 5 and not [12, 13, 14].__contains__(diffMinutes):
-                    minuteText = " минуты"
-                return 'Прошло ' + str(diffMinutes / 60) + " часов " + str(diffMinutes) + minuteText
+                diffHours = diffMinutes / 60
+                return 'Прошло ' + str(diffMinutes / 60) + hoursNames[self.getNumOfVariant(diffHours)] + str(diffMinutes) + minutesNames[self.getNumOfVariant(diffMinutes)]
         else:
             return 'Прошло дней: ' + str(diff.days)
 
