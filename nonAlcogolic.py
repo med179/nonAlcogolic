@@ -4,8 +4,7 @@
 from datetime import date, timedelta, datetime
 from random import randint
 
-import kivy.properties as props
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image, ImageDraw
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.config import Config
@@ -14,6 +13,7 @@ from kivy.graphics import *
 from kivy.graphics.vertex_instructions import RoundedRectangle
 from kivy.storage.dictstore import DictStore
 from kivy.uix.anchorlayout import AnchorLayout
+from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
@@ -32,10 +32,11 @@ Clock.max_iteration = 100000
 
 # from kivy.properties import ObjectProperty
 
+divider = 1
 
 Config.set('graphics', 'resizable', 1)
-Config.set('graphics', 'width', 1080)
-Config.set('graphics', 'height', 1920)
+Config.set('graphics', 'width', 1080 / divider)
+Config.set('graphics', 'height', 1704 / divider)
 
 
 def rounded_rectangle(self, xy, corner_radius, fill=None, outline=None):
@@ -52,12 +53,7 @@ def rounded_rectangle(self, xy, corner_radius, fill=None, outline=None):
 RAD_MULT = 1.5  # PIL GBlur seems to be stronger than Chrome's so I lower the radius
 
 
-class RoundedButton(Button):
-    shadow_texture = props.ObjectProperty(None)
-
-    elevation = props.NumericProperty(1)
-    _shadow_clock = None
-
+class RoundedButton(ButtonBehavior, Label):
     _shadows = {
         1: (1, 3, 0.4),
         2: (3, 6, 0.16),
@@ -68,7 +64,12 @@ class RoundedButton(Button):
 
     def __init__(self, **kwargs):
         super(RoundedButton, self).__init__(**kwargs)
-        background_color = self.background_color
+        self.shadow_texture = None
+        self.elevation = 1
+        if kwargs.has_key('background_color'):
+            background_color = kwargs['background_color']
+        else:
+            background_color = (1, 1, 1, 0)
         if kwargs.has_key('shadow_color'):
             self.shadow_color = kwargs['shadow_color']
         else:
@@ -80,17 +81,17 @@ class RoundedButton(Button):
             Color(rgba=background_color)
             self.rect = RoundedRectangle(pos=self.pos, size=self.size, radius=[20, ])
         self.bind(pos=self.update_rect, size=self.update_rect)
-        self._update_shadow = Clock.create_trigger(self._create_shadow)
 
     def update_rect(self, *args):
         x, y = self.pos[0], self.pos[1]
         self.rect.pos = (x + 10, y + 12)
         ow, oh = self.size[0], self.size[1]
         self.rect.size = (ow - 20, oh - 20)
-        self._update_shadow()
+        self._create_shadow()
 
-    def on_elevation(self, *args, **kwargs):
-        self._update_shadow()
+    # def on_elevation(self, *args, **kwargs):
+    #    #self._create_shadow()
+    #    pass
 
     def _create_shadow(self, *args):
         # print "update shadow"
@@ -120,8 +121,8 @@ class RoundedButton(Button):
         x0, y0 = (w - ow) / 2., (h - oh) / 2.
         x1, y1 = x0 + ow - 1, y0 + oh - 1
         rounded_rectangle(draw, ((x0, y0), (x1, y1)), 20, fill=(0, 0, 0, int(255 * alpha)))
-        im = im.filter(ImageFilter.GaussianBlur(radius * RAD_MULT))
-        texture.blit_buffer(im.tobytes(), colorfmt='rgba', bufferfmt='ubyte')
+        # im = im.filter(ImageFilter.GaussianBlur(radius * RAD_MULT))
+        #texture.blit_buffer(im.tobytes(), colorfmt='rgba', bufferfmt='ubyte')
         return texture
 
     # def on_touch_down(self, touch):
@@ -132,6 +133,11 @@ class RoundedButton(Button):
     # def on_touch_up(self, touch):
     #    if self.collide_point(touch.x, touch.y):
     #        self.elevation = self._orig_elev
+
+
+def markup_text(size, color, text):
+    return '[size=' + str(size / divider) + '][color=' + color + '][font=Roboto][b]' + text + '[/b][/font][/color][/size]'
+
 
 
 class NonAlcogolic(App):
@@ -174,7 +180,7 @@ class StartScreen(Screen):
         verticalBlancLayoutOne = Widget(size_hint=[1, .7])
         verticalBlancLayoutTwo = Widget(size_hint=[1, .07])
         firstBtn = RoundedButton(
-            text="[size=50][font=Roboto][b]ПЕРЕСТАТЬ ПИТЬ![/b][/font][/size]",
+            text=markup_text(size=50, color='FFFFFF', text='ПЕРЕСТАТЬ ПИТЬ!'),
             markup=True,
             size_hint=[1, .06],
             background_color=(0x0 / 255.0, 0xd6 / 255.0, 0xd6 / 255.0, 1),
@@ -205,7 +211,7 @@ class SecondScreen(Screen):
     def __init__(self, **kwargs):
         super(SecondScreen, self).__init__(**kwargs)
         with self.canvas:
-            Color(rgba=[255.0 / 255.0, 255.0 / 255.0, 255.0 / 255.0, 1])
+            Color(rgba=[1, 1, 1, 1])
             self.rect = Rectangle(pos=self.pos, size=self.size)
         self.settings = kwargs['settings']
         secondScreenLayout = BoxLayout(orientation='horizontal')
@@ -214,9 +220,9 @@ class SecondScreen(Screen):
         verticalBlancLayoutOne = Widget(size_hint=[1, .1])
         verticalBlancLayoutTwo = Widget(size_hint=[1, .2])
         buttonsLayout = BoxLayout(orientation='vertical', spacing=30, size_hint=[1, 1])
-        alignSpacesNum = 78
+        alignSpacesNum = 17 * divider
         oneWeekBtn = Button(
-            text="[size=16][color=5F3C03][b]" + ' ' * alignSpacesNum + "НА[/size][size=100]1[/size][size=16]НЕДЕЛЮ[/b][/color][/size]",
+            text=markup_text(size=46, color='5F3C03', text=' ' * alignSpacesNum + "НА ") + markup_text(size=300, color='5F3C03', text='1') + markup_text(size=46, color='5F3C03', text=' НЕДЕЛЮ'),
             halign='left',
             markup=True,
             size_hint=[1, .15],
@@ -226,7 +232,7 @@ class SecondScreen(Screen):
         )
         oneWeekBtn.bind(size=oneWeekBtn.setter('text_size'))
         oneMonthBtn = Button(
-            text="[size=16][color=74858E][b]" + ' ' * alignSpacesNum + "НА[/size][size=100]1[/size][size=16]МЕСЯЦ[/color][/b][/size]",
+            text=markup_text(size=46, color='74858E', text=' ' * alignSpacesNum + "НА ") + markup_text(size=300, color='74858E', text='1') + markup_text(size=46, color='74858E', text=' МЕСЯЦ'),
             halign='left',
             markup=True,
             size_hint=[1, .15],
@@ -235,7 +241,7 @@ class SecondScreen(Screen):
             on_press=self.changerOneMonth)
         oneMonthBtn.bind(size=oneMonthBtn.setter('text_size'))
         oneYearBtn = Button(
-            text="[size=16][color=F1BA18][b]" + ' ' * alignSpacesNum + "НА[/size][size=100]1[/size][size=16]ГОД[/b][/color][/size]",
+            text=markup_text(size=46, color='F1BA18', text=' ' * alignSpacesNum + "НА ") + markup_text(size=300, color='F1BA18', text='1') + markup_text(size=46, color='F1BA18', text=' ГОД'),
             halign='left',
             markup=True,
             size_hint=[1, .15],
@@ -333,28 +339,71 @@ class MySettings(object):
 
 
 class Program(Screen):
+    secondsNames = [' СЕКУНДА ', ' СЕКУНДЫ ', ' СЕКУНД ']
+    minutesNames = [' МИНУТА ', ' МИНУТЫ ', ' МИНУТ ']
+    hoursNames = [' ЧАС ', ' ЧАСА ', ' ЧАСОВ ']
+    daysNames = [' ДЕНЬ ', ' ДНЯ ', ' ДНЕЙ ']
+    cntNames = [' РАЗ ', ' РАЗА ', ' РАЗ ']
+
     def __init__(self, **kwargs):
         super(Program, self).__init__(**kwargs)
         with self.canvas:
-            Color(rgba=[1.0 / 255.0, 172.0 / 255.0, 194.0 / 255.0, 1])
+            Color(rgba=[1, 1, 1, 1])
             self.rect = Rectangle(pos=self.pos, size=self.size)
         self.settings = kwargs['settings']
+        mainLayout = BoxLayout(orientation='horizontal')
+        verticalBlancLayoutOne = Widget(size_hint=[.14, 1])
+        mainLayout.add_widget(verticalBlancLayoutOne)
+
         programLayout = BoxLayout(orientation='vertical')
-        menuButton = Button(text="Menu", size_hint_y=None, size_y=100, on_press=self.changer)
+
+        self.menuLayout = BoxLayout(orientation='horizontal', size_hint=[1, 0.1])
+        self.blancMenuLayoutWidget = Widget(size_hint=[.815, 1])
+        menuButton = Button(text=u'\u2630', size_hint=[.09, 1], on_press=self.changer)
+        self.menuLayout.add_widget(self.blancMenuLayoutWidget)
+        self.menuLayout.add_widget(menuButton)
+        programLayout.add_widget(self.menuLayout)
+
         self.excuse = ['Я не могу больше пить', 'Принимаю антибиотки, нельзя смешивать с алкоголем - можно сдохнуть',
                        'Болею, доктор запретил', 'Аллергия']
-        self.counterLbl = Label(text='Получено предложений выпить: ' + str(self.settings.counter))
-        self.timerGoneLbl = Label(text='')
-        self.timerLeftLbl = Label(text='')
-        buttonProposal = Button(text='Мне предложили выпить', size_hint_y=None, size_y=100, on_press=self.btnPress)
-        programLayout.add_widget(menuButton)
-        programLayout.add_widget(self.counterLbl)
-        programLayout.add_widget(self.timerGoneLbl)
-        programLayout.add_widget(self.timerLeftLbl)
+
+        self.cntLabelWidget, self.cntLbl, self.cntTxtLbl = self.getCountWidget(markup_text(size=46, color='92290E', text='ПРЕДЛОЖИЛИ\nВЫПИТЬ'))
+        goneLabelWidget, self.goneLbl, self.goneTxtLbl = self.getCountWidget(markup_text(size=46, color='75868F', text='ПРОШЛО'))
+        leftLabelWidget, self.leftLbl, self.leftTxtLbl = self.getCountWidget(markup_text(size=46, color='75868F', text='ОСТАЛОСЬ'))
+
+        ##buttonProposal = Button(text='Мне предложили выпить', size_hint_y=None, size_y=100, on_press=self.btnPress)
+        buttonProposal = RoundedButton(
+            text=markup_text(size=50, color='FFFFFF', text='МНЕ ПРЕДЛОЖИЛИ ВЫПИТЬ'),
+            markup=True,
+            size_hint=[.87, .2],
+            background_color=(0x0 / 255.0, 0xd6 / 255.0, 0xd6 / 255.0, 1),
+            shadow_color=(0x19, 0xb6, 0xbb, 1),
+            on_press=self.btnPress
+        )
+
+        programLayout.add_widget(self.cntLabelWidget)
+        programLayout.add_widget(goneLabelWidget)
+        programLayout.add_widget(leftLabelWidget)
         programLayout.add_widget(buttonProposal)
-        self.add_widget(programLayout)
+        mainLayout.add_widget(programLayout)
+        self.add_widget(mainLayout)
         Clock.schedule_interval(self.updateLabels, 1)
         self.bind(pos=self.update_rect, size=self.update_rect)
+
+    def getCountWidget(self, text):
+        mainLayout = BoxLayout(orientation='vertical', size_hint=[1, .8])
+        labelOne = Label(text=text, markup=True, size_hint=[1, 0.42], halign='left', valign='bottom')
+        labelOne.bind(size=labelOne.setter('text_size'))
+        addLayout = BoxLayout(orientation='horizontal')
+        counterLabel = Label(text='', markup=True, size_hint=[.55, 1.04], halign='right', valign='bottom')
+        counterLabel.bind(size=counterLabel.setter('text_size'))
+        textLabel = Label(text='', markup=True, size_hint=[.4, 1.04], halign='left', valign='bottom')
+        textLabel.bind(size=textLabel.setter('text_size'))
+        addLayout.add_widget(counterLabel)
+        addLayout.add_widget(textLabel)
+        mainLayout.add_widget(labelOne)
+        mainLayout.add_widget(addLayout)
+        return mainLayout, counterLabel, textLabel
 
     def update_rect(self, *args):
         self.rect.pos = self.pos
@@ -365,9 +414,30 @@ class Program(Screen):
             currentDate = datetime.now()
             diffGone = currentDate - self.settings.startDay
             diffLeft = self.settings.finalDay - currentDate
-            self.timerGoneLbl.text = self.getTextCountGone(diffGone)
-            self.timerLeftLbl.text = self.getTextCountLeft(diffLeft)
-            self.counterLbl.text = 'Получено предложений выпить: ' + str(self.settings.counter)
+            self.cntLbl.text = markup_text(size=300, color='92290E', text=str(self.settings.counter))
+            self.cntTxtLbl.text = markup_text(size=46, color='92290E', text=self.cntNames[self.getNumOfVariant(self.settings.counter)])
+            cnt, txt = self.getTextForTimers(diffGone)
+            self.goneLbl.text = markup_text(size=300, color='75868F', text=cnt)
+            self.goneTxtLbl.text = markup_text(size=46, color='75868F', text=txt)
+            cnt, txt = self.getTextForTimers(diffLeft)
+            self.leftLbl.text = markup_text(size=300, color='75868F', text=cnt)
+            self.leftTxtLbl.text = markup_text(size=46, color='75868F', text=txt)
+        # self.show_marks1(self.menuLayout)
+        # self.show_marks2(self.blancMenuLayoutWidget)
+
+    def show_marks1(self, widget):
+        # Indicate the position of the anchors with a red top marker
+        widget.canvas.before.clear()
+        with widget.canvas.before:
+            Color(1, 0, 0, 0.5)
+            Rectangle(pos=widget.pos, size=widget.size)
+
+    def show_marks2(self, widget):
+        # Indicate the position of the anchors with a red top marker
+        widget.canvas.before.clear()
+        with widget.canvas.before:
+            Color(0, 1, 0, 0.5)
+            Rectangle(pos=widget.pos, size=widget.size)
 
     def getNumOfVariant(self, num):
         chk = num % 10
@@ -377,22 +447,20 @@ class Program(Screen):
             return 1
         return 2
 
-    def getTextCountGone(self, diff):
-        secondsNames = [' секунда ', ' секунды ', ' секунд ']
-        minutesNames = [' минута ', ' минуты ', ' минут ']
-        hoursNames = [' час ', ' часа ', ' часов ']
+    def getTextForTimers(self, diff):
         if diff.days <= 0:
             if diff.seconds < 60:
-                return 'Прошло ' + str(diff.seconds) + secondsNames[self.getNumOfVariant(diff.seconds)]
+                return str(diff.seconds), self.secondsNames[self.getNumOfVariant(diff.seconds)]
             else:
                 diffMinutes = diff.seconds / 60
-                diffHours = diffMinutes / 60
-                return 'Прошло ' + str(diffMinutes / 60) + hoursNames[self.getNumOfVariant(diffHours)] + str(diffMinutes) + minutesNames[self.getNumOfVariant(diffMinutes)]
-        else:
-            return 'Прошло дней: ' + str(diff.days)
+                if diffMinutes < 60:
+                    return str(diffMinutes), self.minutesNames[self.getNumOfVariant(diffMinutes)]
+                else:
+                    diffHours = diffMinutes / 60
+                    return str(diffHours), self.hoursNames[self.getNumOfVariant(diffHours)]
 
-    def getTextCountLeft(self, diff):
-        return 'Осталось дней: ' + str(diff.days)
+        else:
+            return str(diff.days), self.daysNames[self.getNumOfVariant(diff.days)]
 
     def changer(self, *args):
         self.manager.current = 'MenuScreen'
@@ -422,7 +490,7 @@ class Menu(Screen):
             self.rect = Rectangle(pos=self.pos, size=self.size)
         self.settings = kwargs['settings']
         menuScreenLayout = BoxLayout(orientation='vertical')
-        returnToProgramBtn = Button(text="Закрыть меню", size_hint_y=None, size_y=100, on_press=self.changer)
+        returnToProgramBtn = Button(text="Закрыть меню", size_hint_y=None, size_y=100, on_press=self.closeMenu)
         iWantToDrinkBtn = Button(text="Перестать не пить", size_hint_y=None, size_y=100, on_press=self.changerWarningOneScr)
         iDrankItBtn = Button(text="Я выпил", size_hint_y=None, size_y=100, on_press=self.changer)
         menuScreenLayout.add_widget(returnToProgramBtn)
@@ -434,6 +502,9 @@ class Menu(Screen):
     def update_rect(self, *args):
         self.rect.pos = self.pos
         self.rect.size = self.size
+
+    def closeMenu(self, *args):
+        self.manager.current = 'ProgramScreen'
 
     def changer(self, *args):
         self.settings.startDay = datetime.now()
