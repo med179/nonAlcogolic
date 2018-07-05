@@ -4,7 +4,7 @@
 from datetime import date, timedelta, datetime
 from random import randint
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.config import Config
@@ -122,7 +122,8 @@ class RoundedButton(ButtonBehavior, Label):
         x1, y1 = x0 + ow - 1, y0 + oh - 1
         rounded_rectangle(draw, ((x0, y0), (x1, y1)), 20, fill=(0, 0, 0, int(255 * alpha)))
         # im = im.filter(ImageFilter.GaussianBlur(radius * RAD_MULT))
-        #texture.blit_buffer(im.tobytes(), colorfmt='rgba', bufferfmt='ubyte')
+        im = im.filter(ImageFilter.BLUR)
+        texture.blit_buffer(im.tobytes(), colorfmt='rgba', bufferfmt='ubyte')
         return texture
 
     # def on_touch_down(self, touch):
