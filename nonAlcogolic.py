@@ -136,8 +136,11 @@ class RoundedButton(ButtonBehavior, Label):
     #        self.elevation = self._orig_elev
 
 
-def markup_text(size, color, text):
-    return '[size=' + str(size / divider) + '][color=' + color + '][font=Roboto][b]' + text + '[/b][/font][/color][/size]'
+def markup_text(size, color, text, bold=True):
+    if bold:
+        return '[size=' + str(size / divider) + '][color=' + color + '][font=Roboto][b]' + text + '[/b][/font][/color][/size]'
+    else:
+        return '[size=' + str(size / divider) + '][color=' + color + '][font=Roboto]' + text + '[/font][/color][/size]'
 
 
 
@@ -365,7 +368,7 @@ class Program(Screen):
         self.menuLayout.add_widget(menuButton)
         programLayout.add_widget(self.menuLayout)
 
-        self.excuse = ['Я не могу больше пить', 'Принимаю антибиотки, нельзя смешивать с алкоголем - можно сдохнуть',
+        self.excuses = ['Я не могу больше пить', 'Принимаю антибиотки, нельзя смешивать с алкоголем - можно сдохнуть',
                        'Болею, доктор запретил', 'Аллергия']
 
         self.cntLabelWidget, self.cntLbl, self.cntTxtLbl = self.getCountWidget(markup_text(size=46, color='92290E', text='ПРЕДЛОЖИЛИ\nВЫПИТЬ'))
@@ -377,8 +380,8 @@ class Program(Screen):
             text=markup_text(size=50, color='FFFFFF', text='МНЕ ПРЕДЛОЖИЛИ ВЫПИТЬ'),
             markup=True,
             size_hint=[.87, .2],
-            background_color=(0x0 / 255.0, 0xd6 / 255.0, 0xd6 / 255.0, 1),
-            shadow_color=(0x19, 0xb6, 0xbb, 1),
+            background_color=(0x92 / 255.0, 0x29 / 255.0, 0x0e / 255.0, 1),  # 92290E
+            shadow_color=(0x4E, 0x16, 0x08, 1),  # 4E1608
             on_press=self.btnPress
         )
 
@@ -469,17 +472,17 @@ class Program(Screen):
     def btnPress(self, *args):
         self.settings.counter += 1
         # всплывает попап с отмазкой
-        numberOfExuse = self.excuse[randint(0, len(self.excuse) - 1)]
-        popup = Popup(title="Отмазка на сегодня",
+        exuse = self.excuses[randint(0, len(self.excuses) - 1)]
+        textLabel = Label(text=markup_text(size=80, color='000000', text=exuse, bold=False), markup=True, size_hint=(0.8, 0.8), valign='top')
+        textLabel.bind(size=textLabel.setter('text_size'))
+        popup = Popup(title="ОТМАЗКА НА СЕГОДНЯ",
+                      title_color=(0x75 / 255.0, 0x86 / 255.0, 0x8F / 255.0, 1),  # 75868F
+                      title_size=46,
+                      background='white',
                       separator_color=(1, 1, 1, 1),
-                      content=Label(
-                          text='[color=33ff33][b]' + str(numberOfExuse) + '[/b][/color]',
-                          markup=True,
-                          font_size=20),
+                      content=textLabel,
                       size_hint=(.7, .5))
         popup.open()
-        print(self.excuse[0])
-        pass
 
 
 class Menu(Screen):
