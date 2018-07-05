@@ -84,9 +84,9 @@ class RoundedButton(ButtonBehavior, Label):
 
     def update_rect(self, *args):
         x, y = self.pos[0], self.pos[1]
-        self.rect.pos = (x + 10, y + 12)
+        self.rect.pos = (x + 10 / divider, y + 12 / divider)
         ow, oh = self.size[0], self.size[1]
-        self.rect.size = (ow - 20, oh - 20)
+        self.rect.size = (ow - 20 / divider, oh - 20 / divider)
         self._create_shadow()
 
     # def on_elevation(self, *args, **kwargs):
@@ -100,7 +100,7 @@ class RoundedButton(ButtonBehavior, Label):
         offset_x = 0
         offset_y = 0
         radius = shadow_data[1]
-        ow, oh = w - 20, h - 20
+        ow, oh = w - 20 / divider, h - 20 / divider
         t1 = self._create_boxshadow(ow, oh, radius, shadow_data[2])
         self.shadow1.texture = t1
         self.shadow1.size = w, h
@@ -109,8 +109,8 @@ class RoundedButton(ButtonBehavior, Label):
 
     def _create_boxshadow(self, ow, oh, radius, alpha):
         # We need a bigger texture to correctly blur the edges
-        w = ow + radius * 6.0
-        h = oh + radius * 6.0
+        w = ow + radius * 6.0 / divider
+        h = oh + radius * 6.0 / divider
         w = int(w)
         h = int(h)
         texture = Texture.create(size=(w, h), colorfmt='rgba')
@@ -227,15 +227,15 @@ class SecondScreen(Screen):
         secondScreenLayout = BoxLayout(orientation='horizontal')
         horizontalBlancLayoutOne = Widget(size_hint=[.25, 1])
         horizontalBlancLayoutTwo = Widget(size_hint=[.25, 1])
-        verticalBlancLayoutOne = Widget(size_hint=[1, .1])
+        verticalBlancLayoutOne = Widget(size_hint=[1, .2])
         verticalBlancLayoutTwo = Widget(size_hint=[1, .2])
         buttonsLayout = BoxLayout(orientation='vertical', spacing=30, size_hint=[1, 1])
-        alignSpacesNum = 17 * divider
+        alignSpacesNum = 17
         oneWeekBtn = Button(
             text=markup_text(size=46, color='5F3C03', text=' ' * alignSpacesNum + "НА ") + markup_text(size=300, color='5F3C03', text='1') + markup_text(size=46, color='5F3C03', text=' НЕДЕЛЮ'),
             halign='left',
             markup=True,
-            size_hint=[1, .15],
+            size_hint=[1, .25],
             background_color=(1, 1, 1, 1),
             background_normal='',
             on_press=self.changerOneWeek
@@ -245,7 +245,7 @@ class SecondScreen(Screen):
             text=markup_text(size=46, color='74858E', text=' ' * alignSpacesNum + "НА ") + markup_text(size=300, color='74858E', text='1') + markup_text(size=46, color='74858E', text=' МЕСЯЦ'),
             halign='left',
             markup=True,
-            size_hint=[1, .15],
+            size_hint=[1, .25],
             background_color=(1, 1, 1, 1),
             background_normal='',
             on_press=self.changerOneMonth)
@@ -254,7 +254,7 @@ class SecondScreen(Screen):
             text=markup_text(size=46, color='F1BA18', text=' ' * alignSpacesNum + "НА ") + markup_text(size=300, color='F1BA18', text='1') + markup_text(size=46, color='F1BA18', text=' ГОД'),
             halign='left',
             markup=True,
-            size_hint=[1, .15],
+            size_hint=[1, .25],
             background_color=(1, 1, 1, 1),
             background_normal='',
             on_press=self.changerOneYear)
