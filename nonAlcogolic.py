@@ -424,6 +424,7 @@ class Program(Screen):
         leftLabelWidget, self.leftLbl, self.leftTxtLbl = self.getCountWidget(markup_text(size=46, color='75868F', text='ОСТАЛОСЬ'))
 
         ##buttonProposal = Button(text='Мне предложили выпить', size_hint_y=None, size_y=100, on_press=self.btnPress)
+        horisontalUpperButtonSpacer = Widget(size_hint=[1, .2])
         buttonProposal = RoundedButton(
             text=markup_text(size=50, color='FFFFFF', text='МНЕ ПРЕДЛОЖИЛИ ВЫПИТЬ'),
             markup=True,
@@ -432,11 +433,14 @@ class Program(Screen):
             shadow_color=(0x4E, 0x16, 0x08, 1),  # 4E1608
             on_press=self.btnPress
         )
+        horisontalBottomButtonSpacer = Widget(size_hint=[1, .2])
 
         programLayout.add_widget(self.cntLabelWidget)
         programLayout.add_widget(goneLabelWidget)
         programLayout.add_widget(leftLabelWidget)
+        programLayout.add_widget(horisontalUpperButtonSpacer)
         programLayout.add_widget(buttonProposal)
+        programLayout.add_widget(horisontalBottomButtonSpacer)
         mainLayout.add_widget(programLayout)
         self.add_widget(mainLayout)
         Clock.schedule_interval(self.updateLabels, 1)
@@ -444,10 +448,10 @@ class Program(Screen):
 
     def getCountWidget(self, text):
         mainLayout = BoxLayout(orientation='vertical', size_hint=[1, .8])
-        labelOne = Label(text=text, markup=True, size_hint=[1, 0.42], halign='left', valign='bottom')
+        labelOne = Label(text=text, markup=True, size_hint=[1, 0.8], halign='left', valign='bottom')
         labelOne.bind(size=labelOne.setter('text_size'))
         addLayout = BoxLayout(orientation='horizontal')
-        counterLabel = Label(text='', markup=True, size_hint=[.55, 1.04], halign='right', valign='bottom')
+        counterLabel = Label(text='', markup=True, size_hint=[.55, 1.19], halign='right', valign='top')
         counterLabel.bind(size=counterLabel.setter('text_size'))
         textLabel = Label(text='', markup=True, size_hint=[.4, 1.04], halign='left', valign='bottom')
         textLabel.bind(size=textLabel.setter('text_size'))
