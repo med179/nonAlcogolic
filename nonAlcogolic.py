@@ -529,7 +529,7 @@ class Program(Screen):
         textLabel.bind(size=textLabel.setter('text_size'))
         popup = Popup(title="ОТМАЗКА НА СЕГОДНЯ",
                       title_color=(0x75 / 255.0, 0x86 / 255.0, 0x8F / 255.0, 1),  # 75868F
-                      title_size=46,
+                      title_size=46 / divider,
                       background='white',
                       separator_color=(1, 1, 1, 1),
                       content=textLabel,
