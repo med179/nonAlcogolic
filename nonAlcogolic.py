@@ -136,11 +136,18 @@ class RoundedButton(ButtonBehavior, Label):
     #        self.elevation = self._orig_elev
 
 
-def markup_text(size, color, text, bold=True):
+def markup_text(size, color, text, bold=True, font=None):
     if bold:
-        return '[size=' + str(size / divider) + '][color=' + color + '][font=Roboto][b]' + text + '[/b][/font][/color][/size]'
+        bs = '[b]'
+        be = '[/b]'
     else:
-        return '[size=' + str(size / divider) + '][color=' + color + '][font=Roboto]' + text + '[/font][/color][/size]'
+        bs = ''
+        be = ''
+
+    if not font:
+        font = 'RobotoCondensed-Bold' if bold else 'RobotoCondensed-Regular'
+
+    return '[size=' + str(size / divider) + '][color=' + color + '][font=' + font + ']' + bs + text + be + '[/font][/color][/size]'
 
 
 
@@ -363,7 +370,7 @@ class Program(Screen):
 
         self.menuLayout = BoxLayout(orientation='horizontal', size_hint=[1, 0.1])
         self.blancMenuLayoutWidget = Widget(size_hint=[.815, 1])
-        menuButton = Button(text=u'\u2630', size_hint=[.09, 1], on_press=self.changer)
+        menuButton = Button(text=markup_text(size=40, color='000000', text=u'\ue9bd', font='icomoon'), background_color=(1, 1, 1, 1), background_normal='', markup=True, size_hint=[.09, 1], on_press=self.changer)
         self.menuLayout.add_widget(self.blancMenuLayoutWidget)
         self.menuLayout.add_widget(menuButton)
         programLayout.add_widget(self.menuLayout)
