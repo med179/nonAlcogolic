@@ -214,8 +214,9 @@ class SecondScreen(Screen):
         verticalBlancLayoutOne = Widget(size_hint=[1, .1])
         verticalBlancLayoutTwo = Widget(size_hint=[1, .2])
         buttonsLayout = BoxLayout(orientation='vertical', spacing=30, size_hint=[1, 1])
+        alignSpacesNum = 78
         oneWeekBtn = Button(
-            text="[size=16][color=5F3C03][b]                                                                              НА[/size][size=100]1[/size][size=16]НЕДЕЛЮ[/b][/color][/size]",
+            text="[size=16][color=5F3C03][b]" + ' ' * alignSpacesNum + "НА[/size][size=100]1[/size][size=16]НЕДЕЛЮ[/b][/color][/size]",
             halign='left',
             markup=True,
             size_hint=[1, .15],
@@ -225,7 +226,7 @@ class SecondScreen(Screen):
         )
         oneWeekBtn.bind(size=oneWeekBtn.setter('text_size'))
         oneMonthBtn = Button(
-            text="[size=16][color=74858E][b]                                                                              НА[/size][size=100]1[/size][size=16]МЕСЯЦ[/color][/b][/size]",
+            text="[size=16][color=74858E][b]" + ' ' * alignSpacesNum + "НА[/size][size=100]1[/size][size=16]МЕСЯЦ[/color][/b][/size]",
             halign='left',
             markup=True,
             size_hint=[1, .15],
@@ -234,7 +235,7 @@ class SecondScreen(Screen):
             on_press=self.changerOneMonth)
         oneMonthBtn.bind(size=oneMonthBtn.setter('text_size'))
         oneYearBtn = Button(
-            text="[size=16][color=F1BA18][b]                                                                              НА[/size][size=100]1[/size][size=16]ГОД[/b][/color][/size]",
+            text="[size=16][color=F1BA18][b]" + ' ' * alignSpacesNum + "НА[/size][size=100]1[/size][size=16]ГОД[/b][/color][/size]",
             halign='left',
             markup=True,
             size_hint=[1, .15],
