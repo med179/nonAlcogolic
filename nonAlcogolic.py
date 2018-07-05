@@ -4,9 +4,12 @@
 from datetime import date, timedelta, datetime
 from random import randint
 
+import kivy.properties as props
+from PIL import Image, ImageDraw, ImageFilter
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.config import Config
+from kivy.core.image import Texture
 from kivy.graphics import *
 from kivy.graphics.vertex_instructions import RoundedRectangle
 from kivy.storage.dictstore import DictStore
@@ -35,19 +38,100 @@ Config.set('graphics', 'width', 1080)
 Config.set('graphics', 'height', 1920)
 
 
+def rounded_rectangle(self, xy, corner_radius, fill=None, outline=None):
+    ulpt = xy[0]
+    brpt = xy[1]
+    self.rectangle([(ulpt[0], ulpt[1] + corner_radius), (brpt[0], brpt[1] - corner_radius)], fill=fill, outline=outline)
+    self.rectangle([(ulpt[0] + corner_radius, ulpt[1]), (brpt[0] - corner_radius, brpt[1])], fill=fill, outline=outline)
+    self.pieslice([ulpt, (ulpt[0] + corner_radius * 2, ulpt[1] + corner_radius * 2)], 180, 270, fill=fill, outline=outline)
+    self.pieslice([(brpt[0] - corner_radius * 2, brpt[1] - corner_radius * 2), brpt], 0, 90, fill=fill, outline=outline)
+    self.pieslice([(ulpt[0], brpt[1] - corner_radius * 2), (ulpt[0] + corner_radius * 2, brpt[1])], 90, 180, fill=fill, outline=outline)
+    self.pieslice([(brpt[0] - corner_radius * 2, ulpt[1]), (brpt[0], ulpt[1] + corner_radius * 2)], 270, 360, fill=fill, outline=outline)
+
+
+RAD_MULT = 1.5  # PIL GBlur seems to be stronger than Chrome's so I lower the radius
+
+
 class RoundedButton(Button):
+    shadow_texture = props.ObjectProperty(None)
+
+    elevation = props.NumericProperty(1)
+    _shadow_clock = None
+
+    _shadows = {
+        1: (1, 3, 0.4),
+        2: (3, 6, 0.16),
+        3: (10, 20, 0.19),
+        4: (14, 28, 0.25),
+        5: (19, 38, 0.30)
+    }
+
     def __init__(self, **kwargs):
         super(RoundedButton, self).__init__(**kwargs)
         background_color = self.background_color
-        self.background_color = (0, 0, 0, 0)
+        if kwargs.has_key('shadow_color'):
+            self.shadow_color = kwargs['shadow_color']
+        else:
+            self.shadow_color = (1, 1, 1, 0)
+        self.background_color = (1, 1, 1, 0)
         with self.canvas.before:
+            Color(rgba=(0, 1, 1, 1))
+            self.shadow1 = Rectangle(pos=self.pos, size=self.size, texture=self.shadow_texture)
             Color(rgba=background_color)
             self.rect = RoundedRectangle(pos=self.pos, size=self.size, radius=[20, ])
         self.bind(pos=self.update_rect, size=self.update_rect)
+        self._update_shadow = Clock.create_trigger(self._create_shadow)
 
     def update_rect(self, *args):
-        self.rect.pos = self.pos
-        self.rect.size = self.size
+        x, y = self.pos[0], self.pos[1]
+        self.rect.pos = (x + 10, y + 12)
+        ow, oh = self.size[0], self.size[1]
+        self.rect.size = (ow - 20, oh - 20)
+        self._update_shadow()
+
+    def on_elevation(self, *args, **kwargs):
+        self._update_shadow()
+
+    def _create_shadow(self, *args):
+        # print "update shadow"
+        w, h = self.size[0], self.size[1]
+        shadow_data = self._shadows[self.elevation]
+        offset_x = 0
+        offset_y = 0
+        radius = shadow_data[1]
+        ow, oh = w - 20, h - 20
+        t1 = self._create_boxshadow(ow, oh, radius, shadow_data[2])
+        self.shadow1.texture = t1
+        self.shadow1.size = w, h
+        self.shadow1.pos = self.pos
+        # self.shadow1.pos = self.x - (w - ow) / 2. + offset_x, self.y - (h - oh) / 2. - offset_y
+
+    def _create_boxshadow(self, ow, oh, radius, alpha):
+        # We need a bigger texture to correctly blur the edges
+        w = ow + radius * 6.0
+        h = oh + radius * 6.0
+        w = int(w)
+        h = int(h)
+        texture = Texture.create(size=(w, h), colorfmt='rgba')
+        im = Image.new('RGBA', (w, h), self.shadow_color)
+
+        draw = ImageDraw.Draw(im)
+        # the rectangle to be rendered needs to be centered on the texture
+        x0, y0 = (w - ow) / 2., (h - oh) / 2.
+        x1, y1 = x0 + ow - 1, y0 + oh - 1
+        rounded_rectangle(draw, ((x0, y0), (x1, y1)), 20, fill=(0, 0, 0, int(255 * alpha)))
+        im = im.filter(ImageFilter.GaussianBlur(radius * RAD_MULT))
+        texture.blit_buffer(im.tobytes(), colorfmt='rgba', bufferfmt='ubyte')
+        return texture
+
+    # def on_touch_down(self, touch):
+    #    if self.collide_point(touch.x, touch.y):
+    #        self._orig_elev = self.elevation
+    #        self.elevation = 5
+
+    # def on_touch_up(self, touch):
+    #    if self.collide_point(touch.x, touch.y):
+    #        self.elevation = self._orig_elev
 
 
 class NonAlcogolic(App):
@@ -81,7 +165,7 @@ class StartScreen(Screen):
     def __init__(self, **kwargs):
         super(StartScreen, self).__init__(**kwargs)
         with self.canvas:
-            Color(rgba=[255.0 / 255.0, 255.0 / 255.0, 255.0 / 255.0, 1])
+            Color(rgba=[1, 1, 1, 1])
             self.rect = Rectangle(pos=self.pos, size=self.size)
         btnLayout = BoxLayout(orientation='horizontal')
         centerColumnLayout = BoxLayout(orientation='vertical')
@@ -93,7 +177,8 @@ class StartScreen(Screen):
             text="[size=50][font=Roboto][b]ПЕРЕСТАТЬ ПИТЬ![/b][/font][/size]",
             markup=True,
             size_hint=[1, .06],
-            background_color=(.0, .84, .84, 1),
+            background_color=(0x0 / 255.0, 0xd6 / 255.0, 0xd6 / 255.0, 1),
+            shadow_color=(0x19, 0xb6, 0xbb, 1),
             # background_normal='',
             on_press=self.changer
         )
