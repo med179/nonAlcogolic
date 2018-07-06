@@ -33,10 +33,13 @@ Clock.max_iteration = 100000
 # from kivy.properties import ObjectProperty
 
 divider = 1
+width = 1080.0
+height = 1704.0
+
 
 Config.set('graphics', 'resizable', 1)
-Config.set('graphics', 'width', 1080 / divider)
-Config.set('graphics', 'height', 1704 / divider)
+Config.set('graphics', 'width', int(width / divider))
+Config.set('graphics', 'height', int(height / divider))
 
 
 def rounded_rectangle(self, xy, corner_radius, fill=None, outline=None):
@@ -407,33 +410,34 @@ class Program(Screen):
             self.rect = Rectangle(pos=self.pos, size=self.size)
         self.settings = kwargs['settings']
         mainLayout = BoxLayout(orientation='horizontal')
-        verticalBlancLayoutOne = Widget(size_hint=[.14, 1])
+        verticalBlancLayoutOne = Widget(size_hint=[140 / width, 1])
         mainLayout.add_widget(verticalBlancLayoutOne)
 
-        programLayout = BoxLayout(orientation='vertical')
+        self.programLayoutWidth = 940.0
+        programLayout = BoxLayout(orientation='vertical', size_hint=[self.programLayoutWidth / width, 1])
 
-        self.menuLayout = BoxLayout(orientation='horizontal', size_hint=[1, 0.1])
-        self.blancMenuLayoutWidget = Widget(size_hint=[.815, 1])
-        menuButton = Button(text=markup_text(size=40, color='000000', text=u'\ue9bd', font='icomoon'), background_color=(1, 1, 1, 1), background_normal='', markup=True, size_hint=[.09, 1], on_press=self.changer)
+        self.menuLayout = BoxLayout(orientation='horizontal', size_hint=[1, 144 / height])
+        self.blancMenuLayoutWidget = Widget(size_hint=[800 / self.programLayoutWidth, 1])
+        menuButton = Button(text=markup_text(size=40, color='000000', text=u'\ue9bd', font='icomoon'), background_color=(1, 1, 1, 1), background_normal='', markup=True, size_hint=[140 / self.programLayoutWidth, 1], on_press=self.changer)
         self.menuLayout.add_widget(self.blancMenuLayoutWidget)
         self.menuLayout.add_widget(menuButton)
         programLayout.add_widget(self.menuLayout)
 
-        self.cntLabelWidget, self.cntLbl, self.cntTxtLbl = self.getCountWidget(markup_text(size=46, color='92290E', text='ПРЕДЛОЖИЛИ\nВЫПИТЬ'))
-        goneLabelWidget, self.goneLbl, self.goneTxtLbl = self.getCountWidget(markup_text(size=46, color='75868F', text='ПРОШЛО'))
-        leftLabelWidget, self.leftLbl, self.leftTxtLbl = self.getCountWidget(markup_text(size=46, color='75868F', text='ОСТАЛОСЬ'))
+        self.cntLabelWidget, self.cntLbl, self.cntTxtLbl = self.getCountWidget(markup_text(size=46, color='92290E', text='ПРЕДЛОЖИЛИ\nВЫПИТЬ', font='Roboto-Black'))
+        goneLabelWidget, self.goneLbl, self.goneTxtLbl = self.getCountWidget(markup_text(size=46, color='75868F', text='ПРОШЛО', font='Roboto-Black'))
+        leftLabelWidget, self.leftLbl, self.leftTxtLbl = self.getCountWidget(markup_text(size=46, color='75868F', text='ОСТАЛОСЬ', font='Roboto-Black'))
 
         ##buttonProposal = Button(text='Мне предложили выпить', size_hint_y=None, size_y=100, on_press=self.btnPress)
-        horisontalUpperButtonSpacer = Widget(size_hint=[1, .2])
+        horisontalUpperButtonSpacer = Widget(size_hint=[1, 143 / height])
         buttonProposal = RoundedButton(
             text=markup_text(size=50, color='FFFFFF', text='МНЕ ПРЕДЛОЖИЛИ ВЫПИТЬ'),
             markup=True,
-            size_hint=[.87, .2],
+            size_hint=[800 / self.programLayoutWidth, 150 / height],
             background_color=(0x92 / 255.0, 0x29 / 255.0, 0x0e / 255.0, 1),  # 92290E
             shadow_color=(0x4E, 0x16, 0x08, 1),  # 4E1608
             on_press=self.btnPress
         )
-        horisontalBottomButtonSpacer = Widget(size_hint=[1, .2])
+        horisontalBottomButtonSpacer = Widget(size_hint=[1, 130 / height])
 
         programLayout.add_widget(self.cntLabelWidget)
         programLayout.add_widget(goneLabelWidget)
@@ -447,18 +451,21 @@ class Program(Screen):
         self.bind(pos=self.update_rect, size=self.update_rect)
 
     def getCountWidget(self, text):
-        mainLayout = BoxLayout(orientation='vertical', size_hint=[1, .8])
-        labelOne = Label(text=text, markup=True, size_hint=[1, 0.8], halign='left', valign='bottom')
+        widgetHeight = 384.0
+        mainLayout = BoxLayout(orientation='vertical', size_hint=[1, widgetHeight / height])
+        labelOne = Label(text=text, markup=True, size_hint=[1, 122.0 / widgetHeight], halign='left', valign='center')
         labelOne.bind(size=labelOne.setter('text_size'))
-        addLayout = BoxLayout(orientation='horizontal')
-        counterLabel = Label(text='', markup=True, size_hint=[.55, 1.19], halign='right', valign='top')
+        addLayout = BoxLayout(orientation='horizontal', size_hint=[1, 224.0 / widgetHeight])
+        counterLabel = Label(text='', markup=True, size_hint=[491.0 / self.programLayoutWidth, 1.39], halign='right', valign='top')
         counterLabel.bind(size=counterLabel.setter('text_size'))
-        textLabel = Label(text='', markup=True, size_hint=[.4, 1.04], halign='left', valign='bottom')
+        textLabel = Label(text='', markup=True, size_hint=[449.0 / self.programLayoutWidth, 1], halign='left', valign='bottom')
         textLabel.bind(size=textLabel.setter('text_size'))
         addLayout.add_widget(counterLabel)
         addLayout.add_widget(textLabel)
+        horizontalBlankBottomWidget = Widget(size_hint=[1, 50.0 / widgetHeight])
         mainLayout.add_widget(labelOne)
         mainLayout.add_widget(addLayout)
+        mainLayout.add_widget(horizontalBlankBottomWidget)
         return mainLayout, counterLabel, textLabel
 
     def update_rect(self, *args):
@@ -471,15 +478,15 @@ class Program(Screen):
             diffGone = currentDate - self.settings.startDay
             diffLeft = self.settings.finalDay - currentDate
             self.cntLbl.text = markup_text(size=300, color='92290E', text=str(self.settings.counter))
-            self.cntTxtLbl.text = markup_text(size=46, color='92290E', text=self.cntNames[self.getNumOfVariant(self.settings.counter)])
+            self.cntTxtLbl.text = markup_text(size=46, color='92290E', text=self.cntNames[self.getNumOfVariant(self.settings.counter)], font='Roboto-Black')
             cnt, txt = self.getTextForTimers(diffGone)
             self.goneLbl.text = markup_text(size=300, color='75868F', text=cnt)
-            self.goneTxtLbl.text = markup_text(size=46, color='75868F', text=txt)
+            self.goneTxtLbl.text = markup_text(size=46, color='75868F', text=txt, font='Roboto-Black')
             cnt, txt = self.getTextForTimers(diffLeft)
             self.leftLbl.text = markup_text(size=300, color='75868F', text=cnt)
-            self.leftTxtLbl.text = markup_text(size=46, color='75868F', text=txt)
+            self.leftTxtLbl.text = markup_text(size=46, color='75868F', text=txt, font='Roboto-Black')
         # self.show_marks1(self.menuLayout)
-        # self.show_marks2(self.blancMenuLayoutWidget)
+        # self.show_marks2(self.leftTxtLbl)
 
     def show_marks1(self, widget):
         # Indicate the position of the anchors with a red top marker
