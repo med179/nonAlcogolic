@@ -549,17 +549,44 @@ class Menu(Screen):
     def __init__(self, **kwargs):
         super(Menu, self).__init__(**kwargs)
         with self.canvas:
-            Color(rgba=[1.0 / 255.0, 172.0 / 255.0, 194.0 / 255.0, 1])
+            Color(rgba=[1, 1, 1, 1])
             self.rect = Rectangle(pos=self.pos, size=self.size)
         self.settings = kwargs['settings']
-        menuScreenLayout = BoxLayout(orientation='vertical')
-        returnToProgramBtn = Button(text="Закрыть меню", size_hint_y=None, size_y=100, on_press=self.closeMenu)
-        iWantToDrinkBtn = Button(text="Перестать не пить", size_hint_y=None, size_y=100, on_press=self.changerWarningOneScr)
-        iDrankItBtn = Button(text="Я выпил", size_hint_y=None, size_y=100, on_press=self.changer)
-        menuScreenLayout.add_widget(returnToProgramBtn)
-        menuScreenLayout.add_widget(iWantToDrinkBtn)
-        menuScreenLayout.add_widget(iDrankItBtn)
-        self.add_widget(menuScreenLayout)
+        verticalBlancLayoutTwo = Widget(size_hint=[1, .1])
+        buttonsLayout = BoxLayout(orientation='vertical', spacing=30, size_hint=[1, 1])
+        oneWeekBtn = Button(
+            text=markup_text(size=80, color='92290E', text="ПЕРЕСТАТЬ НЕ ПИТЬ", font='Roboto-Black'),
+            halign='center',
+            markup=True,
+            size_hint=[1, .3],
+            background_color=(1, 1, 1, 1),
+            background_normal='',
+            on_press=self.changerWarningOneScr
+        )
+        oneWeekBtn.bind(size=oneWeekBtn.setter('text_size'))
+        oneMonthBtn = Button(
+            text=markup_text(size=80, color='F1BA18', text="Я ВЫПИЛ", font='Roboto-Black'),
+            halign='center',
+            markup=True,
+            size_hint=[1, .3],
+            background_color=(1, 1, 1, 1),
+            background_normal='',
+            on_press=self.changer)
+        oneMonthBtn.bind(size=oneMonthBtn.setter('text_size'))
+        oneYearBtn = Button(
+            text=markup_text(size=80, color='74858E', text="ЗАКРЫТЬ МЕНЮ", font='Roboto-Black'),
+            halign='center',
+            markup=True,
+            size_hint=[1, .3],
+            background_color=(1, 1, 1, 1),
+            background_normal='',
+            on_press=self.closeMenu)
+        oneYearBtn.bind(size=oneYearBtn.setter('text_size'))
+        buttonsLayout.add_widget(oneWeekBtn)
+        buttonsLayout.add_widget(oneMonthBtn)
+        buttonsLayout.add_widget(oneYearBtn)
+        buttonsLayout.add_widget(verticalBlancLayoutTwo)
+        self.add_widget(buttonsLayout)
         self.bind(pos=self.update_rect, size=self.update_rect)
 
     def update_rect(self, *args):
