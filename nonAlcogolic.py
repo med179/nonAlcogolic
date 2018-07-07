@@ -812,7 +812,7 @@ class WarningThree(Screen):
             Color(rgba=[1, 1, 1, 1])
             self.rect = Rectangle(pos=self.pos, size=self.size)
         self.settings = kwargs['settings']
-        warninLayout = buildWarningForm('И ПОСЛЕ ЭТОГО ТЫ СЧИТАЕШЬ СЕБЯ АЛЬФАСАМЦОМ?', "НЕТ, Я ЛОХ", self.changerNext, "НЕ БУДУ ТАК БОЛЬШЕ! ИЗВИНИТЕ!", self.changerCancel)
+        warninLayout = buildWarningForm('И ПОСЛЕ ЭТОГО ТЫ СЧИТАЕШЬ СЕБЯ АЛЬФА САМЦОМ?', "НЕТ, Я ЛОХ", self.changerNext, "НЕ БУДУ ТАК БОЛЬШЕ! ИЗВИНИТЕ!", self.changerCancel)
         self.add_widget(warninLayout)
         self.bind(pos=self.update_rect, size=self.update_rect)
 
