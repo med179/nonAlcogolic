@@ -35,7 +35,7 @@ Clock.max_iteration = 100000
 divider = 1
 width = 1080.0
 height = 1704.0
-
+sideSpacerSiseHint = size_hint = [180 / width, 1]
 
 Config.set('graphics', 'resizable', 1)
 Config.set('graphics', 'width', int(width / divider))
@@ -104,8 +104,9 @@ class RoundedButton(ButtonBehavior, Label):
         offset_y = 0
         radius = shadow_data[1]
         ow, oh = w - 20 / divider, h - 20 / divider
-        t1 = self._create_boxshadow(ow, oh, radius, shadow_data[2])
-        self.shadow1.texture = t1
+        if ow > 0 and oh > 0:
+            t1 = self._create_boxshadow(ow, oh, radius, shadow_data[2])
+            self.shadow1.texture = t1
         self.shadow1.size = w, h
         self.shadow1.pos = self.pos
         # self.shadow1.pos = self.x - (w - ow) / 2. + offset_x, self.y - (h - oh) / 2. - offset_y
@@ -158,17 +159,21 @@ class NonAlcogolic(App):
     def build(self):
         settings = MySettings()
         myScreenmanager = ScreenManager(transition=FadeTransition())
-        startScreen = StartScreen(name='StartScreen')
+        startScreen = StartScreen(name='StartScreen', settings=settings)
         secondScreen = SecondScreen(name='SecondScreen', settings=settings)
         programScreen = Program(name='ProgramScreen', settings=settings)
         menuScreen = Menu(name='MenuScreen', settings=settings)
         warningOne = WarningOne(name='WarningOne')
         warningTwo = WarningTwo(name='WarningTwo')
         warningThree = WarningThree(name='WarningThree', settings=settings)
+        oneRazNotKontrabas = OneRazNotKontrabas(name='OneRazNotKontrabas')
+        twoRazIsKontrabas = TwoRazIsKontrabas(name='TwoRazIsKontrabas', settings=settings)
         myScreenmanager.add_widget(startScreen)
         myScreenmanager.add_widget(secondScreen)
         myScreenmanager.add_widget(programScreen)
         myScreenmanager.add_widget(menuScreen)
+        myScreenmanager.add_widget(oneRazNotKontrabas)
+        myScreenmanager.add_widget(twoRazIsKontrabas)
         myScreenmanager.add_widget(warningOne)
         myScreenmanager.add_widget(warningTwo)
         myScreenmanager.add_widget(warningThree)
@@ -186,27 +191,28 @@ class StartScreen(Screen):
         with self.canvas:
             Color(rgba=[1, 1, 1, 1])
             self.rect = Rectangle(pos=self.pos, size=self.size)
+        self.settings = kwargs['settings']
         btnLayout = BoxLayout(orientation='horizontal')
         centerColumnLayout = BoxLayout(orientation='vertical')
-        horizontalBlancLayoutOne = Widget(size_hint=[.15, 1])
-        horizontalBlancLayoutTwo = Widget(size_hint=[.15, 1])
-        verticalBlancLayoutOne = Widget(size_hint=[1, .7])
-        verticalBlancLayoutTwo = Widget(size_hint=[1, .07])
+        leftSpacer = Widget(size_hint=sideSpacerSiseHint)
+        rightSpacer = Widget(size_hint=sideSpacerSiseHint)
+        topSpacer = Widget(size_hint=[1, .7])
+        bottomSpacer = Widget(size_hint=[1, .065])
         firstBtn = RoundedButton(
             text=markup_text(size=50, color='FFFFFF', text='ПЕРЕСТАТЬ ПИТЬ!'),
             markup=True,
-            size_hint=[1, .06],
+            size_hint=[1, 116 / height],
             background_color=(0x0 / 255.0, 0xd6 / 255.0, 0xd6 / 255.0, 1),
             shadow_color=(0x19, 0xb6, 0xbb, 1),
             # background_normal='',
             on_press=self.changer
         )
-        btnLayout.add_widget(horizontalBlancLayoutOne)
-        centerColumnLayout.add_widget(verticalBlancLayoutOne)
+        btnLayout.add_widget(leftSpacer)
+        centerColumnLayout.add_widget(topSpacer)
         centerColumnLayout.add_widget(firstBtn)
-        centerColumnLayout.add_widget(verticalBlancLayoutTwo)
+        centerColumnLayout.add_widget(bottomSpacer)
         btnLayout.add_widget(centerColumnLayout)
-        btnLayout.add_widget(horizontalBlancLayoutTwo)
+        btnLayout.add_widget(rightSpacer)
 
         self.add_widget(btnLayout)
         self.bind(pos=self.update_rect, size=self.update_rect)
@@ -300,23 +306,34 @@ class MySettings(object):
     __count = 0
     __isNotReady = True
     __store = None
+    __isKontrabas = False
 
     def __init__(self):
         self.__store = DictStore('user.dat')
-        if self.__store.store_exists('startDay') and self.__store.get('startDay')['data']:
+        if self.__store.store_exists('finalDay') and self.__store.get('finalDay')['data']:
             self.__startDay = self.__store.get('startDay')['data']
             self.__finalDay = self.__store.get('finalDay')['data']
             self.__count = self.__store.get('count')['data']
+            self.__isKontrabas = self.__store.get('isKontrabas')['data']
             self.__isNotReady = False
         else:
-            self.__isNotReady = True
-            self.__store.put('count', data=0)
+            self.reset()
 
     def parseDate(self, dateText):
         if dateText:
             return datetime.strptime(dateText, "%S-%M-%H %d-%m-%Y")
         else:
             None
+
+    def reset(self):
+        self.__isNotReady = True
+        self.__startDay = None
+        self.__finalDay = None
+        self.__count = 0
+        self.__isKontrabas = False
+        self.__store.put('finalDay', data=None)
+        self.__store.put('count', data=0)
+        self.__store.put('isKontrabas', data=False)
 
     def __getattr__(self, attr):
         if attr == 'isNotReady':
@@ -327,6 +344,8 @@ class MySettings(object):
             return self.parseDate(self.__finalDay)
         if attr == 'counter':
             return self.__count
+        if attr == 'isKontrabas':
+            return self.__isKontrabas
         return None
 
     def __setattr__(self, key, value):
@@ -347,6 +366,10 @@ class MySettings(object):
         if key == 'counter':
             self.__count = value
             self.__store.put('count', data=value)
+            return
+        if key == 'isKontrabas':
+            self.__isKontrabas = value
+            self.__store.put('isKontrabas', data=value)
             return
         super(MySettings, self).__setattr__(key, value)
 
@@ -409,35 +432,37 @@ class Program(Screen):
             Color(rgba=[1, 1, 1, 1])
             self.rect = Rectangle(pos=self.pos, size=self.size)
         self.settings = kwargs['settings']
-        mainLayout = BoxLayout(orientation='horizontal')
-        verticalBlancLayoutOne = Widget(size_hint=[140 / width, 1])
-        mainLayout.add_widget(verticalBlancLayoutOne)
 
-        self.programLayoutWidth = 940.0
-        programLayout = BoxLayout(orientation='vertical', size_hint=[self.programLayoutWidth / width, 1])
-
-        self.menuLayout = BoxLayout(orientation='horizontal', size_hint=[1, 144 / height])
-        self.blancMenuLayoutWidget = Widget(size_hint=[800 / self.programLayoutWidth, 1])
-        menuButton = Button(text=markup_text(size=40, color='000000', text=u'\ue9bd', font='icomoon'), background_color=(1, 1, 1, 1), background_normal='', markup=True, size_hint=[140 / self.programLayoutWidth, 1], on_press=self.changer)
+        parentLayout = BoxLayout(orientation='vertical')
+        self.menuLayout = BoxLayout(orientation='horizontal', size_hint=[1, 200 / height])
+        self.blancMenuLayoutWidget = Widget(size_hint=[880 / width, 1])
+        menuButton = Button(text=markup_text(size=40, color='000000', text=u'\ue9bd', font='icomoon'), background_color=(1, 1, 1, 1), background_normal='', markup=True, size_hint=[200 / width, 1], on_press=self.changer)
         self.menuLayout.add_widget(self.blancMenuLayoutWidget)
         self.menuLayout.add_widget(menuButton)
-        programLayout.add_widget(self.menuLayout)
+        parentLayout.add_widget(self.menuLayout)
+
+        mainLayout = BoxLayout(orientation='horizontal')
+        leftSpacer = Widget(size_hint=sideSpacerSiseHint)
+        rightSpacer = Widget(size_hint=sideSpacerSiseHint)
+        mainLayout.add_widget(leftSpacer)
+
+        self.programLayoutWidth = 940.0
+        programLayout = BoxLayout(orientation='vertical')
 
         self.cntLabelWidget, self.cntLbl, self.cntTxtLbl = self.getCountWidget(markup_text(size=46, color='92290E', text='ПРЕДЛОЖИЛИ\nВЫПИТЬ', font='Roboto-Black'))
         goneLabelWidget, self.goneLbl, self.goneTxtLbl = self.getCountWidget(markup_text(size=46, color='75868F', text='ПРОШЛО', font='Roboto-Black'))
         leftLabelWidget, self.leftLbl, self.leftTxtLbl = self.getCountWidget(markup_text(size=46, color='75868F', text='ОСТАЛОСЬ', font='Roboto-Black'))
 
-        ##buttonProposal = Button(text='Мне предложили выпить', size_hint_y=None, size_y=100, on_press=self.btnPress)
-        horisontalUpperButtonSpacer = Widget(size_hint=[1, 143 / height])
+        horisontalUpperButtonSpacer = Widget(size_hint=[1, 144 / height])
         buttonProposal = RoundedButton(
             text=markup_text(size=50, color='FFFFFF', text='МНЕ ПРЕДЛОЖИЛИ ВЫПИТЬ'),
             markup=True,
-            size_hint=[800 / self.programLayoutWidth, 150 / height],
+            size_hint=[1, 145 / height],
             background_color=(0x92 / 255.0, 0x29 / 255.0, 0x0e / 255.0, 1),  # 92290E
             shadow_color=(0x4E, 0x16, 0x08, 1),  # 4E1608
             on_press=self.btnPress
         )
-        horisontalBottomButtonSpacer = Widget(size_hint=[1, 130 / height])
+        horisontalBottomButtonSpacer = Widget(size_hint=[1, 135 / height])
 
         programLayout.add_widget(self.cntLabelWidget)
         programLayout.add_widget(goneLabelWidget)
@@ -446,7 +471,9 @@ class Program(Screen):
         programLayout.add_widget(buttonProposal)
         programLayout.add_widget(horisontalBottomButtonSpacer)
         mainLayout.add_widget(programLayout)
-        self.add_widget(mainLayout)
+        mainLayout.add_widget(rightSpacer)
+        parentLayout.add_widget(mainLayout)
+        self.add_widget(parentLayout)
         Clock.schedule_interval(self.updateLabels, 1)
         self.bind(pos=self.update_rect, size=self.update_rect)
 
@@ -456,9 +483,9 @@ class Program(Screen):
         labelOne = Label(text=text, markup=True, size_hint=[1, 122.0 / widgetHeight], halign='left', valign='center')
         labelOne.bind(size=labelOne.setter('text_size'))
         addLayout = BoxLayout(orientation='horizontal', size_hint=[1, 224.0 / widgetHeight])
-        counterLabel = Label(text='', markup=True, size_hint=[491.0 / self.programLayoutWidth, 1.39], halign='right', valign='top')
+        counterLabel = Label(text='', markup=True, size_hint=[0.571, 1.39], halign='right', valign='top')
         counterLabel.bind(size=counterLabel.setter('text_size'))
-        textLabel = Label(text='', markup=True, size_hint=[449.0 / self.programLayoutWidth, 1], halign='left', valign='bottom')
+        textLabel = Label(text='', markup=True, size_hint=[0.429, 1], halign='left', valign='bottom')
         textLabel.bind(size=textLabel.setter('text_size'))
         addLayout.add_widget(counterLabel)
         addLayout.add_widget(textLabel)
@@ -552,11 +579,13 @@ class Menu(Screen):
             Color(rgba=[1, 1, 1, 1])
             self.rect = Rectangle(pos=self.pos, size=self.size)
         self.settings = kwargs['settings']
-        verticalBlancLayoutTwo = Widget(size_hint=[1, .1])
+        topBlankWidget = Widget(size_hint=[1, .1])
+        bottomBlankWidget = Widget(size_hint=[1, .1])
         buttonsLayout = BoxLayout(orientation='vertical', spacing=30, size_hint=[1, 1])
         oneWeekBtn = Button(
             text=markup_text(size=80, color='92290E', text="ПЕРЕСТАТЬ НЕ ПИТЬ", font='Roboto-Black'),
             halign='center',
+            valign='center',
             markup=True,
             size_hint=[1, .3],
             background_color=(1, 1, 1, 1),
@@ -564,30 +593,44 @@ class Menu(Screen):
             on_press=self.changerWarningOneScr
         )
         oneWeekBtn.bind(size=oneWeekBtn.setter('text_size'))
-        oneMonthBtn = Button(
-            text=markup_text(size=80, color='F1BA18', text="Я ВЫПИЛ", font='Roboto-Black'),
+        if not self.settings.isKontrabas:
+            colorForIDrink = 'F1BA18'
+        else:
+            colorForIDrink = '92290E'
+        self.iDrinkBtn = Button(
+            text=markup_text(size=80, color=colorForIDrink, text="Я ВЫПИЛ", font='Roboto-Black'),
             halign='center',
+            valign='center',
             markup=True,
             size_hint=[1, .3],
             background_color=(1, 1, 1, 1),
             background_normal='',
             on_press=self.changer)
-        oneMonthBtn.bind(size=oneMonthBtn.setter('text_size'))
+        self.iDrinkBtn.bind(size=self.iDrinkBtn.setter('text_size'))
         oneYearBtn = Button(
             text=markup_text(size=80, color='74858E', text="ЗАКРЫТЬ МЕНЮ", font='Roboto-Black'),
             halign='center',
+            valign='center',
             markup=True,
             size_hint=[1, .3],
             background_color=(1, 1, 1, 1),
             background_normal='',
             on_press=self.closeMenu)
         oneYearBtn.bind(size=oneYearBtn.setter('text_size'))
+        buttonsLayout.add_widget(topBlankWidget)
         buttonsLayout.add_widget(oneWeekBtn)
-        buttonsLayout.add_widget(oneMonthBtn)
+        buttonsLayout.add_widget(self.iDrinkBtn)
         buttonsLayout.add_widget(oneYearBtn)
-        buttonsLayout.add_widget(verticalBlancLayoutTwo)
+        buttonsLayout.add_widget(bottomBlankWidget)
         self.add_widget(buttonsLayout)
         self.bind(pos=self.update_rect, size=self.update_rect)
+
+    def on_enter(self, *args):
+        if not self.settings.isKontrabas:
+            colorForIDrink = 'F1BA18'
+        else:
+            colorForIDrink = '92290E'
+        self.iDrinkBtn.text = markup_text(size=80, color=colorForIDrink, text="Я ВЫПИЛ", font='Roboto-Black')
 
     def update_rect(self, *args):
         self.rect.pos = self.pos
@@ -598,27 +641,109 @@ class Menu(Screen):
 
     def changer(self, *args):
         self.settings.startDay = datetime.now()
-        self.manager.current = 'ProgramScreen'
+        if not self.settings.isKontrabas:
+            self.settings.isKontrabas = True
+            self.manager.current = 'OneRazNotKontrabas'
+        else:
+            self.manager.current = 'TwoRazIsKontrabas'
 
     def changerWarningOneScr(self, *args):
         self.manager.current = 'WarningOne'
+
+
+def buildWarningForm(textLbl, textBtn1, eventBtn1, textBtn2, eventBtn2):
+    buttonSizeHint = [1, 100 / height]
+    mainLayout = BoxLayout(orientation='horizontal')
+    leftSpacer = Widget(size_hint=sideSpacerSiseHint)
+    rightSpacer = Widget(size_hint=sideSpacerSiseHint)
+    mainLayout.add_widget(leftSpacer)
+    warninLayout = BoxLayout(orientation='vertical', spacing=50)
+    lblLayout = AnchorLayout(size_hint_y=0.5)
+    warninLbl = Label(text=markup_text(size=80, color='92290E', text=textLbl, bold=False, font='Roboto-Black'),
+                      markup=True,
+                      size_hint_x=0.8,
+                      haligh='center',
+                      valign='center')
+    warninLbl.bind(size=warninLbl.setter('text_size'))
+    lblLayout.add_widget(warninLbl)
+    warninLayout.add_widget(lblLayout)
+    if not textBtn1 or not textBtn2:
+        bottomBlankWidget1 = Widget(size_hint=buttonSizeHint)
+        warninLayout.add_widget(bottomBlankWidget1)
+    if textBtn1:
+        button1 = RoundedButton(
+            text=markup_text(size=50, color='FFFFFF', text=textBtn1),
+            markup=True,
+            size_hint=buttonSizeHint,
+            background_color=(0x92 / 255.0, 0x29 / 255.0, 0x0e / 255.0, 1),  # 92290E
+            shadow_color=(0x4E, 0x16, 0x08, 1),  # 4E1608
+            on_press=eventBtn1
+        )
+        warninLayout.add_widget(button1)
+    if textBtn2:
+        button2 = RoundedButton(
+            text=markup_text(size=50, color='FFFFFF', text=textBtn2),
+            markup=True,
+            size_hint=buttonSizeHint,
+            background_color=(0x0 / 255.0, 0xd6 / 255.0, 0xd6 / 255.0, 1),
+            shadow_color=(0x19, 0xb6, 0xbb, 1),
+            on_press=eventBtn2
+        )
+        warninLayout.add_widget(button2)
+
+    bottomBlankWidget2 = Widget(size_hint_x=1, size_hint_y=0.035)
+    warninLayout.add_widget(bottomBlankWidget2)
+
+    mainLayout.add_widget(warninLayout)
+    mainLayout.add_widget(rightSpacer)
+    return mainLayout
+
+
+class OneRazNotKontrabas(Screen):
+    def __init__(self, **kwargs):
+        super(OneRazNotKontrabas, self).__init__(**kwargs)
+        with self.canvas:
+            Color(rgba=[1, 1, 1, 1])
+            self.rect = Rectangle(pos=self.pos, size=self.size)
+        warninLayout = buildWarningForm('ЭХ... НУ ЧТОЖ ТЫ...\nОДИН РАЗ НЕ КОНТРАБАС, ХОТЯ САМ ПОНИМАЕШЬ...', None, None, "OK, НЕ БУДУ БОЛЬШЕ ПИТЬ", self.changerCancel)
+        self.add_widget(warninLayout)
+        self.bind(pos=self.update_rect, size=self.update_rect)
+
+    def update_rect(self, *args):
+        self.rect.pos = self.pos
+        self.rect.size = self.size
+
+    def changerCancel(self, *args):
+        self.manager.current = 'ProgramScreen'
+
+
+class TwoRazIsKontrabas(Screen):
+    def __init__(self, **kwargs):
+        super(TwoRazIsKontrabas, self).__init__(**kwargs)
+        with self.canvas:
+            Color(rgba=[4, 1, 1, 1])
+            self.rect = Rectangle(pos=self.pos, size=self.size)
+        self.settings = kwargs['settings']
+        warninLayout = buildWarningForm('ЭТА ПРОГРАММА ДЛЯ МУЖИКОВ, А НЕ ДЛЯ ТЕБЯ!', "Я НЕ МУЖИК", self.changerNext, None, None)
+        self.add_widget(warninLayout)
+        self.bind(pos=self.update_rect, size=self.update_rect)
+
+    def update_rect(self, *args):
+        self.rect.pos = self.pos
+        self.rect.size = self.size
+
+    def changerNext(self, *args):
+        self.settings.reset()
+        self.manager.current = 'StartScreen'
 
 
 class WarningOne(Screen):
     def __init__(self, **kwargs):
         super(WarningOne, self).__init__(**kwargs)
         with self.canvas:
-            Color(rgba=[1.0 / 255.0, 172.0 / 255.0, 194.0 / 255.0, 1])
+            Color(rgba=[1, 1, 1, 1])
             self.rect = Rectangle(pos=self.pos, size=self.size)
-        warninLayout = BoxLayout(orientation='vertical')
-        lblLayout = AnchorLayout()
-        warninLbl = Label(text='Ты же обещал не пить! Мужик всегда держит слово. Ты что, не мужик?', halign='center', valign='top')
-        lblLayout.add_widget(warninLbl)
-        warninBtn = Button(text="Я не мужик", size_hint_y=None, size_y=100, on_press=self.changerNext)
-        cancelBtn = Button(text="Ok, не буду пить.", size_hint_y=None, size_y=100, on_press=self.changerCancel)
-        warninLayout.add_widget(lblLayout)
-        warninLayout.add_widget(warninBtn)
-        warninLayout.add_widget(cancelBtn)
+        warninLayout = buildWarningForm('ТЫ ЖЕ ОБЕЩАЛ НЕ ПИТЬ! МУЖИК ВСЕГДА ДЕРЖИТ СЛОВО. ТЫ ЧТО, НЕ МУЖИК?', "Я НЕ МУЖИК", self.changerNext, "ЛАДНО, НЕ БУДУ ПИТЬ", self.changerCancel)
         self.add_widget(warninLayout)
         self.bind(pos=self.update_rect, size=self.update_rect)
 
@@ -637,17 +762,9 @@ class WarningTwo(Screen):
     def __init__(self, **kwargs):
         super(WarningTwo, self).__init__(**kwargs)
         with self.canvas:
-            Color(rgba=[1.0 / 255.0, 172.0 / 255.0, 194.0 / 255.0, 1])
+            Color(rgba=[1, 1, 1, 1])
             self.rect = Rectangle(pos=self.pos, size=self.size)
-        warninLayout = BoxLayout(orientation='vertical')
-        lblLayout = AnchorLayout()
-        warninLbl = Label(text='Как ты потом будешь смотреть в глаза своим друзьям, которые верили тебе?', halign='center', valign='top')
-        lblLayout.add_widget(warninLbl)
-        warninBtn = Button(text="Никак, я дерьмо.", size_hint_y=None, size_y=100, on_press=self.changerNext)
-        cancelBtn = Button(text="Ладно, я передумал. Не буду пить.", size_hint_y=None, size_y=100, on_press=self.changerCancel)
-        warninLayout.add_widget(lblLayout)
-        warninLayout.add_widget(warninBtn)
-        warninLayout.add_widget(cancelBtn)
+        warninLayout = buildWarningForm('КАК ТЫ ПОТОМ БУДЕШЬ СМОТРЕТЬ В ГЛАЗА СВОИМ ДРУЗЬЯМ, КОТОРЫЕ ВЕРИЛИ ТЕБЕ?', "НИКАК, Я ДЕРЬМО", self.changerNext, "ОК, Я ПЕРЕДУМАЛ. НЕ БУДУ ПИТЬ", self.changerCancel)
         self.add_widget(warninLayout)
         self.bind(pos=self.update_rect, size=self.update_rect)
 
@@ -666,18 +783,10 @@ class WarningThree(Screen):
     def __init__(self, **kwargs):
         super(WarningThree, self).__init__(**kwargs)
         with self.canvas:
-            Color(rgba=[1.0 / 255.0, 172.0 / 255.0, 194.0 / 255.0, 1])
+            Color(rgba=[1, 1, 1, 1])
             self.rect = Rectangle(pos=self.pos, size=self.size)
         self.settings = kwargs['settings']
-        warninLayout = BoxLayout(orientation='vertical')
-        lblLayout = AnchorLayout()
-        warninLbl = Label(text='И после этого ты считаешь себя альфасамцом?', halign='center', valign='top')
-        lblLayout.add_widget(warninLbl)
-        warninBtn = Button(text="Нет, я лох.", size_hint_y=None, size_y=100, on_press=self.changerNext)
-        cancelBtn = Button(text="Я не буду так больше. Извините.", size_hint_y=None, size_y=100, on_press=self.changerCancel)
-        warninLayout.add_widget(lblLayout)
-        warninLayout.add_widget(warninBtn)
-        warninLayout.add_widget(cancelBtn)
+        warninLayout = buildWarningForm('И ПОСЛЕ ЭТОГО ТЫ СЧИТАЕШЬ СЕБЯ АЛЬФАСАМЦОМ?', "НЕТ, Я ЛОХ", self.changerNext, "НЕ БУДУ ТАК БОЛЬШЕ! ИЗВИНИТЕ!", self.changerCancel)
         self.add_widget(warninLayout)
         self.bind(pos=self.update_rect, size=self.update_rect)
 
@@ -686,9 +795,7 @@ class WarningThree(Screen):
         self.rect.size = self.size
 
     def changerNext(self, *args):
-        self.settings.startDay = None
-        self.settings.finalDay = None
-        self.settings.counter = 0
+        self.settings.reset()
         self.manager.current = 'StartScreen'
 
     def changerCancel(self, *args):
