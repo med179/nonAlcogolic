@@ -17,7 +17,7 @@ from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
-from kivy.uix.popup import Popup
+from kivy.uix.modalview import ModalView
 from kivy.uix.screenmanager import Screen, ScreenManager, FadeTransition
 from kivy.uix.widget import Widget
 
@@ -56,7 +56,7 @@ def rounded_rectangle(self, xy, corner_radius, fill=None, outline=None):
 RAD_MULT = 1.5  # PIL GBlur seems to be stronger than Chrome's so I lower the radius
 
 
-class RoundedButton(ButtonBehavior, Label):
+class RoundedWidget(Widget):
     _shadows = {
         1: (1, 3, 0.4),
         2: (3, 6, 0.16),
@@ -66,7 +66,7 @@ class RoundedButton(ButtonBehavior, Label):
     }
 
     def __init__(self, **kwargs):
-        super(RoundedButton, self).__init__(**kwargs)
+        super(RoundedWidget, self).__init__(**kwargs)
         self.shadow_texture = None
         self.elevation = 1
         if kwargs.has_key('background_color'):
@@ -139,6 +139,9 @@ class RoundedButton(ButtonBehavior, Label):
     #    if self.collide_point(touch.x, touch.y):
     #        self.elevation = self._orig_elev
 
+
+class RoundedButton(ButtonBehavior, RoundedWidget, Label):
+    pass
 
 def markup_text(size, color, text, bold=True, font=None):
     if bold:
@@ -558,16 +561,39 @@ class Program(Screen):
     def btnPress(self, *args):
         self.settings.counter += 1
         # всплывает попап с отмазкой
-        exuse = self.excuses[randint(0, len(self.excuses) - 1)]
-        textLabel = Label(text=markup_text(size=80, color='000000', text=exuse, bold=False), markup=True, size_hint=(0.8, 0.8), valign='top')
+        excuse = self.excuses[randint(0, len(self.excuses) - 1)]
+        # textLabel = Label(text=markup_text(size=80, color='000000', text=exсuse, bold=False), markup=True, size_hint=(0.8, 0.8), valign='top')
+        # textLabel.bind(size=textLabel.setter('text_size'))
+        # popup = ModalView(title="ОТМАЗКА НА СЕГОДНЯ",
+        #               title_color=(0x75 / 255.0, 0x86 / 255.0, 0x8F / 255.0, 1),  # 75868F
+        #               title_size=46 / divider,
+        #               #background='white',
+        #               background_color=(1, 1, 1, 0),
+        #               separator_color=(1, 1, 1, 1),
+        #               content=textLabel,
+        #               size_hint=(.7, .5))
+
+        popup = ModalView(size_hint=[0.8, 0.6])
+        popupWidget = RoundedWidget(size_hint=[1.1, 1.1], background_color=(1, 1, 1, 1), shadow_color=(70, 70, 70, 1))
+        widgetLayout = BoxLayout(orientation='vertical')
+
+        def popupUpdate(instance, *args):
+            x, y = instance.size
+            widgetLayout.size = (x - 100, y - 100)
+            w, h = instance.pos
+            widgetLayout.pos = (w + 50, h + 50)
+
+        popupWidget.bind(size=popupUpdate, pos=popupUpdate)  # popupButton.setter('text_size'))
+        captionLabel = Label(text=markup_text(size=46, color='75868F', text='ОТМАЗКА НА СЕГОДНЯ', font='Roboto-Black'), markup=True, size_hint=(1, 0.35), valign='top', halign='left')
+        captionLabel.bind(size=captionLabel.setter('text_size'))
+        textLabel = Button(text=markup_text(size=80, color='000000', text=excuse, bold=False), markup=True, size_hint=(1, 0.65), valign='top', halign='left', background_color=(0, 0, 0, 0), on_press=popup.dismiss)
         textLabel.bind(size=textLabel.setter('text_size'))
-        popup = Popup(title="ОТМАЗКА НА СЕГОДНЯ",
-                      title_color=(0x75 / 255.0, 0x86 / 255.0, 0x8F / 255.0, 1),  # 75868F
-                      title_size=46 / divider,
-                      background='white',
-                      separator_color=(1, 1, 1, 1),
-                      content=textLabel,
-                      size_hint=(.7, .5))
+        widgetLayout.add_widget(captionLabel)
+        widgetLayout.add_widget(textLabel)
+        popupWidget.add_widget(widgetLayout)
+        popup.add_widget(popupWidget)
+        popup.background_color = (0.2, 0.2, 0.2, 0.9)
+
         popup.open()
 
 
