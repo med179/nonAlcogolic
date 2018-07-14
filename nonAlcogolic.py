@@ -1,5 +1,15 @@
 # python
 # -*- coding: utf-8 -*-
+# Добавил строку из мастрерславля, после которой все заработало.... хер знает, может поможет. Это для кодировок. 
+from __future__ import unicode_literals
+
+
+# У МЕНЯ НИХЕРА НЕ ЗАПУСКАЕТСЯ!!!!!!!! 
+# from PIL import Image, ImageDraw, ImageFilter   
+# И   
+# from kivy.graphics.vertex_instructions import RoundedRectangle
+
+
 
 from datetime import date, timedelta, datetime
 from random import randint
@@ -41,7 +51,7 @@ Config.set('graphics', 'resizable', 1)
 Config.set('graphics', 'width', int(width / divider))
 Config.set('graphics', 'height', int(height / divider))
 
-
+#насколько я понял, эта хрень нужна для теней. Но как она работает полностью  я не понимаю. 
 def rounded_rectangle(self, xy, corner_radius, fill=None, outline=None):
     ulpt = xy[0]
     brpt = xy[1]
@@ -55,7 +65,7 @@ def rounded_rectangle(self, xy, corner_radius, fill=None, outline=None):
 
 RAD_MULT = 1.5  # PIL GBlur seems to be stronger than Chrome's so I lower the radius
 
-
+#Это тоже для теней. 
 class RoundedWidget(Widget):
     _shadows = {
         1: (1, 3, 0.4),
@@ -140,6 +150,8 @@ class RoundedWidget(Widget):
     #        self.elevation = self._orig_elev
 
 
+
+#Вот это здесь зачем непонятно.
 class RoundedButton(ButtonBehavior, RoundedWidget, Label):
     pass
 
