@@ -1,5 +1,15 @@
 # python
 # -*- coding: utf-8 -*-
+# Добавил строку из мастрерславля, после которой все заработало.... хер знает, может поможет. Это для кодировок.
+from __future__ import unicode_literals
+
+
+# У МЕНЯ НИХЕРА НЕ ЗАПУСКАЕТСЯ!!!!!!!!
+# from PIL import Image, ImageDraw, ImageFilter
+# И
+# from kivy.graphics.vertex_instructions import RoundedRectangle
+
+
 
 from datetime import date, timedelta, datetime
 from random import randint
@@ -35,7 +45,7 @@ Config.set('graphics', 'resizable', 1)
 Config.set('graphics', 'width', int(width / divider))
 Config.set('graphics', 'height', int(height / divider))
 
-
+#насколько я понял, эта хрень нужна для теней. Но как она работает полностью  я не понимаю.
 def rounded_rectangle(self, xy, corner_radius, fill=None, outline=None):
     ulpt = xy[0]
     brpt = xy[1]
@@ -47,6 +57,7 @@ def rounded_rectangle(self, xy, corner_radius, fill=None, outline=None):
     self.pieslice([(brpt[0] - corner_radius * 2, ulpt[1]), (brpt[0], ulpt[1] + corner_radius * 2)], 270, 360, fill=fill, outline=outline)
 
 
+#Это тоже для теней.
 class RoundedWidget(Widget):
     def __init__(self, **kwargs):
         super(RoundedWidget, self).__init__(**kwargs)
@@ -64,7 +75,7 @@ class RoundedWidget(Widget):
         self.rect.pos = self.pos
         self.rect.size = self.size
 
-
+#Вот это здесь зачем непонятно.
 class RoundedFlatButton(ButtonBehavior, RoundedWidget, Label):
     pass
 
