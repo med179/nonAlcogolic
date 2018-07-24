@@ -4,18 +4,18 @@
 from datetime import date, timedelta, datetime
 from random import randint
 
-from PIL import Image, ImageDraw, ImageFilter
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.config import Config
-from kivy.core.image import Texture
 from kivy.graphics import *
 from kivy.graphics.vertex_instructions import RoundedRectangle
+from kivy.properties import ListProperty, NumericProperty
 from kivy.storage.dictstore import DictStore
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
+from kivy.uix.effectwidget import EffectWidget, EffectBase
 from kivy.uix.label import Label
 from kivy.uix.modalview import ModalView
 from kivy.uix.screenmanager import Screen, ScreenManager, FadeTransition
@@ -24,13 +24,7 @@ from kivy.uix.widget import Widget
 # Clock.max_iteration = sys.maxint
 Clock.max_iteration = 100000
 
-# Нормальные переходы:
-# FadeTransition
-# WipeTransition
-# FallOutTransition ???
-# RiseInTransition ???
-
-# from kivy.properties import ObjectProperty
+SHADOW_RADIUS = 15.0
 
 divider = 1
 width = 1080.0
@@ -53,95 +47,105 @@ def rounded_rectangle(self, xy, corner_radius, fill=None, outline=None):
     self.pieslice([(brpt[0] - corner_radius * 2, ulpt[1]), (brpt[0], ulpt[1] + corner_radius * 2)], 270, 360, fill=fill, outline=outline)
 
 
-RAD_MULT = 1.5  # PIL GBlur seems to be stronger than Chrome's so I lower the radius
-
-
 class RoundedWidget(Widget):
-    _shadows = {
-        1: (1, 3, 0.4),
-        2: (3, 6, 0.16),
-        3: (10, 20, 0.19),
-        4: (14, 28, 0.25),
-        5: (19, 38, 0.30)
-    }
-
     def __init__(self, **kwargs):
         super(RoundedWidget, self).__init__(**kwargs)
-        self.shadow_texture = None
-        self.elevation = 1
+        self.background_color = (1, 1, 1, 0)
         if kwargs.has_key('background_color'):
             background_color = kwargs['background_color']
         else:
             background_color = (1, 1, 1, 0)
-        if kwargs.has_key('shadow_color'):
-            self.shadow_color = kwargs['shadow_color']
-        else:
-            self.shadow_color = (1, 1, 1, 0)
-        self.background_color = (1, 1, 1, 0)
         with self.canvas.before:
-            Color(rgba=(0, 1, 1, 1))
-            self.shadow1 = Rectangle(pos=self.pos, size=self.size, texture=self.shadow_texture)
             Color(rgba=background_color)
             self.rect = RoundedRectangle(pos=self.pos, size=self.size, radius=[20, ])
         self.bind(pos=self.update_rect, size=self.update_rect)
 
     def update_rect(self, *args):
-        x, y = self.pos[0], self.pos[1]
-        self.rect.pos = (x + 10 / divider, y + 12 / divider)
-        ow, oh = self.size[0], self.size[1]
-        self.rect.size = (ow - 20 / divider, oh - 20 / divider)
-        self._create_shadow()
-
-    # def on_elevation(self, *args, **kwargs):
-    #    #self._create_shadow()
-    #    pass
-
-    def _create_shadow(self, *args):
-        # print "update shadow"
-        w, h = self.size[0], self.size[1]
-        shadow_data = self._shadows[self.elevation]
-        offset_x = 0
-        offset_y = 0
-        radius = shadow_data[1]
-        ow, oh = w - 20 / divider, h - 20 / divider
-        if ow > 0 and oh > 0:
-            t1 = self._create_boxshadow(ow, oh, radius, shadow_data[2])
-            self.shadow1.texture = t1
-        self.shadow1.size = w, h
-        self.shadow1.pos = self.pos
-        # self.shadow1.pos = self.x - (w - ow) / 2. + offset_x, self.y - (h - oh) / 2. - offset_y
-
-    def _create_boxshadow(self, ow, oh, radius, alpha):
-        # We need a bigger texture to correctly blur the edges
-        w = ow + radius * 6.0 / divider
-        h = oh + radius * 6.0 / divider
-        w = int(w)
-        h = int(h)
-        texture = Texture.create(size=(w, h), colorfmt='rgba')
-        im = Image.new('RGBA', (w, h), self.shadow_color)
-
-        draw = ImageDraw.Draw(im)
-        # the rectangle to be rendered needs to be centered on the texture
-        x0, y0 = (w - ow) / 2., (h - oh) / 2.
-        x1, y1 = x0 + ow - 1, y0 + oh - 1
-        rounded_rectangle(draw, ((x0, y0), (x1, y1)), 20, fill=(0, 0, 0, int(255 * alpha)))
-        # im = im.filter(ImageFilter.GaussianBlur(radius * RAD_MULT))
-        im = im.filter(ImageFilter.BLUR)
-        texture.blit_buffer(im.tobytes(), colorfmt='rgba', bufferfmt='ubyte')
-        return texture
-
-    # def on_touch_down(self, touch):
-    #    if self.collide_point(touch.x, touch.y):
-    #        self._orig_elev = self.elevation
-    #        self.elevation = 5
-
-    # def on_touch_up(self, touch):
-    #    if self.collide_point(touch.x, touch.y):
-    #        self.elevation = self._orig_elev
+        self.rect.pos = self.pos
+        self.rect.size = self.size
 
 
-class RoundedButton(ButtonBehavior, RoundedWidget, Label):
+class RoundedFlatButton(ButtonBehavior, RoundedWidget, Label):
     pass
+
+
+effect_drop_shadow = '''
+#define M_PI 3.1415926535897932384626433832795
+vec4 effect(vec4 color, sampler2D texture, vec2 tex_coords, vec2 coords) {{
+    vec2 coords2;
+    float x, y;
+    float radius, sampling, surface;
+    vec4 tint, shadow;
+    coords2 = coords + vec2({offset_x:f}, {offset_y:f}) ;
+    radius = {radius:f};
+    sampling = {sampling:f};
+    tint = vec4({r:f}, {g:f}, {b:f}, {a:f});
+    if (color.a >= .99)
+        return color;
+    surface = (sampling * M_PI * radius * radius) / 2.;
+    shadow = vec4(0., 0., 0., 0.);
+    for (x = -radius; x < radius; x += sampling)
+        for (y = -radius; y < radius; y += sampling)
+            if (length(vec2(x, y)) <= radius)
+                shadow += texture2D(
+                    texture,
+                    vec2(coords2.x + x, coords2.y + y) / resolution
+                    ).a * tint / surface;
+    return color + shadow * (shadow.a - color.a);
+}}
+'''
+
+
+class DropShadowEffect(EffectBase):
+    '''Add DropShadow to the input.'''
+    offset = ListProperty([0, 0])
+    tint = ListProperty([0, 0, 0, 1])
+    radius = NumericProperty(1)
+    sampling = NumericProperty(1)
+
+    def __init__(self, *args, **kwargs):
+        super(DropShadowEffect, self).__init__(*args, **kwargs)
+        self.fbind('offset', self.do_glsl)
+        self.fbind('tint', self.do_glsl)
+        self.fbind('radius', self.do_glsl)
+        self.fbind('sampling', self.do_glsl)
+        self.do_glsl()
+
+    def on_size(self, *args):
+        self.do_glsl()
+
+    def do_glsl(self, *args):
+        self.glsl = effect_drop_shadow.format(
+            offset_x=self.offset[0],
+            offset_y=self.offset[1],
+            radius=self.radius,
+            sampling=self.sampling,
+            r=self.tint[0],
+            g=self.tint[1],
+            b=self.tint[2],
+            a=self.tint[3],
+        )
+
+
+class RoundedShadowButton(BoxLayout):
+    def __init__(self, **kwargs):
+        super(RoundedShadowButton, self).__init__(**kwargs)
+        if kwargs.has_key('shadow_color'):
+            self.shadow_color = kwargs['shadow_color']
+        else:
+            self.shadow_color = (1, 1, 1, 0)
+        self.bind(size=self.update_rect)
+        self.effect = EffectWidget(size_hint=[1, 1])
+        self.button = RoundedFlatButton(**kwargs)
+        self.button.pos = (SHADOW_RADIUS / divider, SHADOW_RADIUS / divider)
+        self.button.size_hint = [None, None]
+        self.effect.add_widget(self.button)
+        self.effect.effects = [DropShadowEffect(radius=SHADOW_RADIUS / divider, tint=[0, 0, 0, 0.8])]
+        self.add_widget(self.effect)
+
+    def update_rect(self, *args):
+        ow, oh = self.size[0], self.size[1]
+        self.button.size = (ow - SHADOW_RADIUS * 2 / divider, oh - SHADOW_RADIUS * 2 / divider)
 
 def markup_text(size, color, text, bold=True, font=None):
     if bold:
@@ -201,7 +205,7 @@ class StartScreen(Screen):
         rightSpacer = Widget(size_hint=sideSpacerSiseHint)
         topSpacer = Widget(size_hint=[1, .7])
         bottomSpacer = Widget(size_hint=[1, .065])
-        firstBtn = RoundedButton(
+        firstBtn = RoundedShadowButton(
             text=markup_text(size=50, color='FFFFFF', text='ПЕРЕСТАТЬ ПИТЬ!'),
             markup=True,
             size_hint=[1, 116 / height],
@@ -457,7 +461,7 @@ class Program(Screen):
         leftLabelWidget, self.leftLbl, self.leftTxtLbl = self.getCountWidget(markup_text(size=46, color='75868F', text='ОСТАЛОСЬ', font='Roboto-Black'))
 
         horisontalUpperButtonSpacer = Widget(size_hint=[1, 144 / height])
-        buttonProposal = RoundedButton(
+        buttonProposal = RoundedShadowButton(
             text=markup_text(size=50, color='FFFFFF', text='МНЕ ПРЕДЛОЖИЛИ ВЫПИТЬ'),
             markup=True,
             size_hint=[1, 145 / height],
@@ -574,7 +578,9 @@ class Program(Screen):
         #               size_hint=(.7, .5))
 
         popup = ModalView(size_hint=[0.8, 0.6])
-        popupWidget = RoundedWidget(size_hint=[1.1, 1.1], background_color=(1, 1, 1, 1), shadow_color=(70, 70, 70, 1))
+        effectWidget = EffectWidget(size_hint=[1.2, 1.2])
+        effectLayout = AnchorLayout(anchor_x='center', anchor_y='center', size_hint=[1, 1])
+        popupWidget = RoundedWidget(size_hint=[0.9, 0.9], background_color=(1, 1, 1, 1), shadow_color=(70, 70, 70, 1))
         widgetLayout = BoxLayout(orientation='vertical')
 
         def popupUpdate(instance, *args):
@@ -591,8 +597,11 @@ class Program(Screen):
         widgetLayout.add_widget(captionLabel)
         widgetLayout.add_widget(textLabel)
         popupWidget.add_widget(widgetLayout)
-        popup.add_widget(popupWidget)
-        popup.background_color = (0.2, 0.2, 0.2, 0.9)
+        effectLayout.add_widget(popupWidget)
+        effectWidget.add_widget(effectLayout)
+        effectWidget.effects = [DropShadowEffect(radius=SHADOW_RADIUS / divider, tint=[0, 0, 0, 0.7])]
+        popup.add_widget(effectWidget)
+        popup.background_color = (0.2, 0.2, 0.2, 0.6)
 
         popup.open()
 
@@ -697,7 +706,7 @@ def buildWarningForm(textLbl, textBtn1, eventBtn1, textBtn2, eventBtn2):
         bottomBlankWidget1 = Widget(size_hint=buttonSizeHint)
         warninLayout.add_widget(bottomBlankWidget1)
     if textBtn1:
-        button1 = RoundedButton(
+        button1 = RoundedShadowButton(
             text=markup_text(size=50, color='FFFFFF', text=textBtn1),
             markup=True,
             size_hint=buttonSizeHint,
@@ -707,7 +716,7 @@ def buildWarningForm(textLbl, textBtn1, eventBtn1, textBtn2, eventBtn2):
         )
         warninLayout.add_widget(button1)
     if textBtn2:
-        button2 = RoundedButton(
+        button2 = RoundedShadowButton(
             text=markup_text(size=50, color='FFFFFF', text=textBtn2),
             markup=True,
             size_hint=buttonSizeHint,
