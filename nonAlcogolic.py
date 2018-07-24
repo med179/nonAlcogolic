@@ -3,14 +3,6 @@
 # Добавил строку из мастрерславля, после которой все заработало.... хер знает, может поможет. Это для кодировок.
 from __future__ import unicode_literals
 
-
-# У МЕНЯ НИХЕРА НЕ ЗАПУСКАЕТСЯ!!!!!!!!
-# from PIL import Image, ImageDraw, ImageFilter
-# И
-# from kivy.graphics.vertex_instructions import RoundedRectangle
-
-
-
 from datetime import date, timedelta, datetime
 from random import randint
 
@@ -31,6 +23,9 @@ from kivy.uix.modalview import ModalView
 from kivy.uix.screenmanager import Screen, ScreenManager, FadeTransition
 from kivy.uix.widget import Widget
 
+# У МЕНЯ НИХЕРА НЕ ЗАПУСКАЕТСЯ!!!!!!!!
+# from kivy.graphics.vertex_instructions import RoundedRectangle
+
 # Clock.max_iteration = sys.maxint
 Clock.max_iteration = 100000
 
@@ -45,7 +40,8 @@ Config.set('graphics', 'resizable', 1)
 Config.set('graphics', 'width', int(width / divider))
 Config.set('graphics', 'height', int(height / divider))
 
-#насколько я понял, эта хрень нужна для теней. Но как она работает полностью  я не понимаю.
+
+# насколько я понял, эта хрень нужна для теней. Но как она работает полностью  я не понимаю.
 def rounded_rectangle(self, xy, corner_radius, fill=None, outline=None):
     ulpt = xy[0]
     brpt = xy[1]
@@ -57,7 +53,7 @@ def rounded_rectangle(self, xy, corner_radius, fill=None, outline=None):
     self.pieslice([(brpt[0] - corner_radius * 2, ulpt[1]), (brpt[0], ulpt[1] + corner_radius * 2)], 270, 360, fill=fill, outline=outline)
 
 
-#Это тоже для теней.
+# Это тоже для теней.
 class RoundedWidget(Widget):
     def __init__(self, **kwargs):
         super(RoundedWidget, self).__init__(**kwargs)
@@ -75,13 +71,15 @@ class RoundedWidget(Widget):
         self.rect.pos = self.pos
         self.rect.size = self.size
 
-#Вот это здесь зачем непонятно.
+
+# Вот это здесь зачем непонятно.
 class RoundedFlatButton(ButtonBehavior, RoundedWidget, Label):
     pass
 
 
-effect_drop_shadow = '''
+effect_drop_shadow = b'''
 #define M_PI 3.1415926535897932384626433832795
+
 vec4 effect(vec4 color, sampler2D texture, vec2 tex_coords, vec2 coords) {{
     vec2 coords2;
     float x, y;
@@ -157,6 +155,7 @@ class RoundedShadowButton(BoxLayout):
     def update_rect(self, *args):
         ow, oh = self.size[0], self.size[1]
         self.button.size = (ow - SHADOW_RADIUS * 2 / divider, oh - SHADOW_RADIUS * 2 / divider)
+
 
 def markup_text(size, color, text, bold=True, font=None):
     if bold:
